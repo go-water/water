@@ -1,7 +1,5 @@
 package water
 
-import "context"
+import "github.com/gin-gonic/gin"
 
-// Endpoint is the fundamental building block of servers and clients.
-// It represents a single RPC method.
-type Endpoint func(ctx context.Context, request interface{}) (response interface{}, err error)
+type Endpoint func(ctx *gin.Context, req interface{}) (interface{}, error)
