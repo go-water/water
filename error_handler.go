@@ -1,7 +1,6 @@
 package water
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -25,8 +24,8 @@ func (h *LogErrorHandler) Handle(ctx *gin.Context, err error) {
 	h.logger.Error(fmt.Sprintf("err: %s", err.Error()))
 }
 
-type ErrorHandlerFunc func(ctx context.Context, err error)
+type ErrorHandlerFunc func(ctx *gin.Context, err error)
 
-func (f ErrorHandlerFunc) Handle(ctx context.Context, err error) {
+func (f ErrorHandlerFunc) Handle(ctx *gin.Context, err error) {
 	f(ctx, err)
 }
