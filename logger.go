@@ -1,4 +1,4 @@
-package logger
+package water
 
 import (
 	"go.uber.org/zap"
