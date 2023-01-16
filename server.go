@@ -1,6 +1,7 @@
 package water
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/go-water/water/logger"
 )
@@ -11,6 +12,7 @@ type Handler interface {
 
 type Server struct {
 	e            Endpoint
+	finalizer    []ServerFinalizerFunc
 	errorHandler ErrorHandler
 }
 
@@ -32,4 +34,16 @@ func (s Server) ServeGin(ctx *gin.Context, req interface{}) (interface{}, error)
 	}
 
 	return resp, nil
+}
+
+type ServerOption func(*Server)
+
+func ServerErrorHandler(errorHandler ErrorHandler) ServerOption {
+	return func(s *Server) { s.errorHandler = errorHandler }
+}
+
+type ServerFinalizerFunc func(ctx context.Context, err error)
+
+func ServerFinalizer(f ...ServerFinalizerFunc) ServerOption {
+	return func(s *Server) { s.finalizer = append(s.finalizer, f...) }
 }
