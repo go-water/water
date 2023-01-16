@@ -16,11 +16,15 @@ type Server struct {
 	errorHandler ErrorHandler
 }
 
-func NewServer(e Endpoint) *Server {
+func NewServer(e Endpoint, options ...ServerOption) *Server {
 	zLog := logger.Config{}
 	s := &Server{
 		e:            e,
 		errorHandler: NewLogErrorHandler(zLog.NewLogger()),
+	}
+
+	for _, option := range options {
+		option(s)
 	}
 
 	return s
