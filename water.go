@@ -10,8 +10,9 @@ type Service interface {
 	//Name() string
 }
 
-func NewHandler(svc Service) *Server {
+func NewHandler(svc Service, options ...ServerOption) *Server {
 	return NewServer(
 		svc.Endpoint(),
+		options...,
 	)
 }
