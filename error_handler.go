@@ -22,7 +22,7 @@ func NewLogErrorHandler(l *zap.Logger, n string) *LogErrorHandler {
 }
 
 func (h *LogErrorHandler) Handle(ctx context.Context, err error) {
-	h.logger.Error("water inner", zap.Namespace(h.n), zap.Any("Core", err.Error()))
+	h.logger.Error(h.n, zap.Error(err))
 }
 
 type ErrorHandlerFunc func(ctx context.Context, err error)
