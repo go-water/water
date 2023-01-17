@@ -1,5 +1,7 @@
 package water
 
-import "github.com/gin-gonic/gin"
+import (
+	"context"
+)
 
-type Endpoint func(ctx *gin.Context, req interface{}) (interface{}, error)
+type Endpoint func(ctx context.Context, req interface{}) (interface{}, error)

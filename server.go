@@ -1,11 +1,11 @@
 package water
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
 )
 
 type Handler interface {
-	ServeGin(ctx *gin.Context, req interface{}) (interface{}, error)
+	ServeGin(ctx context.Context, req interface{}) (interface{}, error)
 }
 
 type Server struct {
@@ -30,7 +30,7 @@ func NewServer(e Endpoint, options ...ServerOption) *Server {
 	return s
 }
 
-func (s Server) ServeGin(ctx *gin.Context, req interface{}) (resp interface{}, err error) {
+func (s Server) ServeGin(ctx context.Context, req interface{}) (resp interface{}, err error) {
 	if len(s.finalizer) > 0 {
 		defer func() {
 			for _, fn := range s.finalizer {
