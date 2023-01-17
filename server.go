@@ -5,7 +5,7 @@ import (
 )
 
 type Handler interface {
-	ServeGin(ctx context.Context, req interface{}) (interface{}, error)
+	ServerWater(ctx context.Context, req interface{}) (interface{}, error)
 }
 
 type Server struct {
@@ -30,7 +30,7 @@ func NewServer(e Endpoint, n string, options ...ServerOption) *Server {
 	return s
 }
 
-func (s Server) ServeGin(ctx context.Context, req interface{}) (resp interface{}, err error) {
+func (s Server) ServerWater(ctx context.Context, req interface{}) (resp interface{}, err error) {
 	if len(s.finalizer) > 0 {
 		defer func() {
 			for _, fn := range s.finalizer {
