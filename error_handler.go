@@ -2,7 +2,6 @@ package water
 
 import (
 	"context"
-	"fmt"
 	"go.uber.org/zap"
 )
 
@@ -11,17 +10,19 @@ type ErrorHandler interface {
 }
 
 type LogErrorHandler struct {
+	n      string
 	logger *zap.Logger
 }
 
-func NewLogErrorHandler(l *zap.Logger) *LogErrorHandler {
+func NewLogErrorHandler(l *zap.Logger, n string) *LogErrorHandler {
 	return &LogErrorHandler{
 		logger: l,
+		n:      n,
 	}
 }
 
 func (h *LogErrorHandler) Handle(ctx context.Context, err error) {
-	h.logger.Error(fmt.Sprintf("err: %s", err.Error()))
+	h.logger.Error(err.Error(), zap.Namespace(h.n))
 }
 
 type ErrorHandlerFunc func(ctx context.Context, err error)
