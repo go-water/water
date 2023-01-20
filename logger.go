@@ -7,30 +7,16 @@ import (
 )
 
 type Config struct {
-	Level      string `yaml:"level"`
-	Encoding   string `yaml:"encoding"`
-	CallFull   bool   `yaml:"call_full"`
-	MaxSize    int    `yaml:"max_size"`
-	MaxAge     int    `yaml:"max_age"`
-	MaxBackups int    `yaml:"max_backups"`
-	LocalTime  bool   `yaml:"local_time"`
-	Compress   bool   `yaml:"compress"`
-	Color      bool   `yaml:"color"`
-	AddCaller  bool   `yaml:"add_caller"`
-}
-
-func convertLogLevel(levelStr string) (level zapcore.Level) {
-	switch levelStr {
-	case "debug":
-		level = zap.DebugLevel
-	case "info":
-		level = zap.InfoLevel
-	case "warn":
-		level = zap.WarnLevel
-	case "error":
-		level = zap.ErrorLevel
-	}
-	return
+	Level      zapcore.Level `yaml:"level"`
+	Encoding   string        `yaml:"encoding"`
+	CallFull   bool          `yaml:"call_full"`
+	MaxSize    int           `yaml:"max_size"`
+	MaxAge     int           `yaml:"max_age"`
+	MaxBackups int           `yaml:"max_backups"`
+	LocalTime  bool          `yaml:"local_time"`
+	Compress   bool          `yaml:"compress"`
+	Color      bool          `yaml:"color"`
+	AddCaller  bool          `yaml:"add_caller"`
 }
 
 func (conf *Config) NewLogger() *zap.Logger {
@@ -60,7 +46,7 @@ func (conf *Config) NewLogger() *zap.Logger {
 	newCore := zapcore.NewCore(
 		encoder,
 		zapcore.AddSync(zapcore.AddSync(os.Stdout)),
-		zap.NewAtomicLevelAt(convertLogLevel(conf.Level)))
+		zap.NewAtomicLevelAt(conf.Level))
 	l := zap.New(newCore, opts...)
 	return l
 }
