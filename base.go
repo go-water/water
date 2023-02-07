@@ -21,3 +21,6 @@ func (s *ServerBase) Name(srv interface{}) string {
 func (s *ServerBase) GetLogger() *zap.Logger {
 	return s.l
 }
+
+func (s *ServerBase) SetLogger(l *zap.Logger) {
+}
