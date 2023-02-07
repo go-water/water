@@ -15,9 +15,9 @@ type Server struct {
 	errorHandler ErrorHandler
 }
 
-func NewServer(e Endpoint, n string, options ...ServerOption) *Server {
+func NewServer(srv Service, options ...ServerOption) *Server {
 	s := &Server{
-		e: e,
+		e: srv.Endpoint(),
 		c: new(Config),
 	}
 
@@ -25,7 +25,9 @@ func NewServer(e Endpoint, n string, options ...ServerOption) *Server {
 		option(s)
 	}
 
-	s.errorHandler = NewLogErrorHandler(s.c.NewLogger(), n)
+	handler := NewLogErrorHandler(s.c.NewLogger(), srv.Name())
+	srv.SetLogger(handler.logger)
+	s.errorHandler = handler
 
 	return s
 }

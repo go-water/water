@@ -2,10 +2,13 @@ package water
 
 import (
 	"fmt"
+	"go.uber.org/zap"
 	"strings"
 )
 
-type ServerBase struct{}
+type ServerBase struct {
+	l *zap.Logger
+}
 
 func (s *ServerBase) Name(srv interface{}) string {
 	fullName := fmt.Sprintf("%T", srv)
@@ -13,4 +16,8 @@ func (s *ServerBase) Name(srv interface{}) string {
 	name := fullName[index+1:]
 
 	return name
+}
+
+func (s *ServerBase) GetLogger() *zap.Logger {
+	return s.l
 }
