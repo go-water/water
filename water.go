@@ -8,6 +8,6 @@ type Service interface {
 	SetLogger(l *zap.Logger)
 }
 
-func NewHandler(svc Service, options ...ServerOption) *Server {
-	return NewServer(svc, options...)
+func NewHandler(srv Service, options ...ServerOption) *Server {
+	return NewServer(srv, options...)
 }
