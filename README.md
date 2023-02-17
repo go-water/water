@@ -1,10 +1,18 @@
-## 星星增长趋势
+go-water 是一个web辅助框架，帮助 web 框架（gin，iris）实现友好，优美的设计，定义一些接口、规范、约定，让整个系统变得更可读，更解耦，更容易协同开发。
+
+### 星星增长趋势
 [![Stargazers over time](https://starchart.cc/go-water/water.svg)](https://starchart.cc/go-water/water)
 
 ### 安装
 ```
 go get -u github.com/go-water/water
 ```
+
+### 核心函数类型
+```
+type Endpoint func(ctx context.Context, req interface{}) (interface{}, error)
+```
+业务接口 Service 包含一个方法返回这个类型
 
 ### 介绍 Service 接口
 ```
@@ -57,7 +65,7 @@ func (srv *GetArticleService) Name() string {
 	return srv.ServerBase.Name(srv)
 }
 ```
-包含三个方法，其中两个方法是为了实现 Service 接口，还有一个方法 SetLogger，由于嵌套结构体已经实现，所以不用再实现，Handle 方法是具体业务调用
+包含三个方法，其中两个方法是为了实现 Service 接口，还有一个方法 SetLogger，由于嵌套结构体已经实现，所以不用再实现，Handle 方法是获取数据层数据，或者其他业务数据
 
 ### 创建一个 Handler，并归入 Handlers 结构体
 ```
