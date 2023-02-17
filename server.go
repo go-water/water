@@ -15,7 +15,7 @@ type Server struct {
 	errorHandler ErrorHandler
 }
 
-func NewServer(srv Service, options ...ServerOption) *Server {
+func NewHandler(srv Service, options ...ServerOption) Handler {
 	s := &Server{
 		e: srv.Endpoint(),
 		c: new(Config),

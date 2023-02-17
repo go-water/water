@@ -7,7 +7,3 @@ type Service interface {
 	Name() string
 	SetLogger(l *zap.Logger)
 }
-
-func NewHandler(srv Service, options ...ServerOption) *Server {
-	return NewServer(srv, options...)
-}
