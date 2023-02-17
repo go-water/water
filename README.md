@@ -116,6 +116,13 @@ type ErrorHandler interface {
 ### 配置 option
 ```
 type ServerOption func(*Server)
+
+// 改写低层错误处理
+func ServerErrorHandler(errorHandler ErrorHandler) ServerOption
+// 添加后置执行器
+func ServerFinalizer(f ...ServerFinalizerFunc) ServerOption
+// 配置日志Config
+func ServerConfig(c *Config) ServerOption
 ```
 其中 Server 实现了 Handler 接口，配置 Server，其实是配置 Handler，上面代码来之样例仓库，经过简化处理，更加详细的代码，请参考下面仓库
 
