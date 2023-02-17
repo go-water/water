@@ -75,7 +75,7 @@ type Handlers struct {
 
 func NewService() *Handlers {
 	return &Handlers{
-		getArticle:  water.NewHandler(&service.GetArticleService{ServerBase: &water.ServerBase{}}),
+		getArticle:  water.NewHandler(&GetArticleService{ServerBase: &water.ServerBase{}}),
 	}
 }
 ```
