@@ -111,7 +111,7 @@ type ErrorHandler interface {
 	Handle(ctx context.Context, err error)
 }
 ```
-每个业务服务接口，比如 GetArticleService 层，如果发生 error，低层会自动打印日志，日志里面会带上[GetArticleService]，以便区分
+每个业务服务接口，比如 GetArticleService 层，如果发生 error，低层会自动打印日志，日志里面会带上[GetArticleService]，以便区分，用户可以通过下面的 option 改写日志的方式，只需实现上面接口，然后在创建业务接口实现时改写行为。
 
 ### 配置 option
 ```
