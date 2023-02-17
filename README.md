@@ -22,19 +22,19 @@ func (s *ServerBase) Name(srv interface{}) string
 func (s *ServerBase) GetLogger() *zap.Logger
 func (s *ServerBase) SetLogger(l *zap.Logger)
 ```
-这个结构体嵌套进业务结构体，使得业务结构体或者两个读写日志相关的方法，方法Name用来注入服务接口名，打印日志带上接口名更加友好
+这个结构体嵌套进业务结构体，使得业务结构体获得两个读写日志相关的方法，方法Name用来注入服务接口名，打印日志带上接口名更加友好
 
-### 创建一个具体的业务接口 Service (MyApiService)
+### 如何创建一个具体的业务接口 Service (GetArticleService)
 ```
-type MyApiServiceRequest struct {
+type GetArticleRequest struct {
 	UrlID string `json:"url_id"`
 }
 
-type MyApiService struct {
+type GetArticleService struct {
 	*water.ServerBase
 }
 
-func (srv *MyApiService) Handle(ctx context.Context, req *MyApiServiceRequest) (interface{}, error) {
+func (srv *GetArticleService) Handle(ctx context.Context, req *GetArticleRequest) (interface{}, error) {
 	result, err := model.GetArticle(model.DbMap, req.UrlID)
 	if err != nil {
 		return nil, err
@@ -43,9 +43,9 @@ func (srv *MyApiService) Handle(ctx context.Context, req *MyApiServiceRequest) (
 	return result, nil
 }
 
-func (srv *MyApiService) Endpoint() water.Endpoint {
+func (srv *GetArticleService) Endpoint() water.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		if r, ok := req.(*MyApiServiceRequest); ok {
+		if r, ok := req.(*GetArticleRequest); ok {
 			return srv.Handle(ctx, r)
 		} else {
 			return nil, errors.New("request type error")
@@ -53,13 +53,13 @@ func (srv *MyApiService) Endpoint() water.Endpoint {
 	}
 }
 
-func (srv *MyApiService) Name() string {
+func (srv *GetArticleService) Name() string {
 	return srv.ServerBase.Name(srv)
 }
 ```
-包含三个方法，其中两个方法是为了实现 Service 接口，还有一个方法 SetLogger，由于嵌套结构体已经实现，所以不用再实现
+包含三个方法，其中两个方法是为了实现 Service 接口，还有一个方法 SetLogger，由于嵌套结构体已经实现，所以不用再实现，Handle 方法是具体业务调用
 
-### 创建一个 Handler
+### 创建一个 Handler，并归入 Handlers 结构体
 ```
 type Handlers struct {
 	getArticle  water.Handler
@@ -67,7 +67,7 @@ type Handlers struct {
 
 func NewService() *Handlers {
 	return &Handlers{
-		getArticle:  water.NewHandler(&service.MyApiService{ServerBase: &water.ServerBase{}}),
+		getArticle:  water.NewHandler(&service.GetArticleService{ServerBase: &water.ServerBase{}}),
 	}
 }
 ```
@@ -88,13 +88,14 @@ func (h *Handlers) GetArticle(ctx iris.Context) {
 	ctx.View("detail.html")
 }
 ```
+把接口控制器函数写成 Handlers 方法，小写字母打头，避免字段与方法重名
 
 ### 日志处理
 ```
 srv.GetLogger().Error(err.Error())
 srv.GetLogger().Info("打印一条日志")
 ```
-srv 就是业务实现 MyApiService 的实例，在 MyApiService 方法中，都可以打印日志。（这里封装了 zap 日志组件）
+srv 就是业务实现 MyApiService 的实例，在 GetArticleService 方法中，都可以打印日志。（这里封装了 zap 日志组件）
 
 ### 错误处理
 ```
@@ -102,7 +103,7 @@ type ErrorHandler interface {
 	Handle(ctx context.Context, err error)
 }
 ```
-每个业务服务接口，比如 MyApiService 层，如果发生 error，低层会自动打印日志，日志里面会带上[MyApiService]，以便区分
+每个业务服务接口，比如 GetArticleService 层，如果发生 error，低层会自动打印日志，日志里面会带上[GetArticleService]，以便区分
 
 ### 配置 option
 ```
