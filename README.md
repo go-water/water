@@ -128,3 +128,6 @@ func ServerConfig(c *Config) ServerOption
 
 ### 样例仓库
 + [go-water/go-water](https://github.com/go-water/go-water)
+
+### 官方网站
++ [爱斯园](https://go-water.cn)
