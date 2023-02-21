@@ -10,17 +10,17 @@ type ErrorHandler interface {
 }
 
 type LogErrorHandler struct {
-	logger *zap.Logger
+	l *zap.Logger
 }
 
 func NewLogErrorHandler(l *zap.Logger, n string) *LogErrorHandler {
 	return &LogErrorHandler{
-		logger: l.Named(n),
+		l: l.Named(n),
 	}
 }
 
 func (h *LogErrorHandler) Handle(ctx context.Context, err error) {
-	h.logger.Error("Core", zap.Error(err))
+	h.l.Error("Core", zap.Error(err))
 }
 
 type ErrorHandlerFunc func(ctx context.Context, err error)

@@ -2,10 +2,12 @@ package water
 
 import (
 	"context"
+	"go.uber.org/zap"
 )
 
 type Handler interface {
 	ServerWater(ctx context.Context, req interface{}) (interface{}, error)
+	GetLogger() *zap.Logger
 }
 
 type Server struct {
@@ -13,6 +15,7 @@ type Server struct {
 	e            Endpoint
 	finalizer    []ServerFinalizerFunc
 	errorHandler ErrorHandler
+	l            *zap.Logger
 }
 
 func NewHandler(srv Service, options ...ServerOption) Handler {
@@ -26,7 +29,8 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 	}
 
 	handler := NewLogErrorHandler(s.c.NewLogger(), srv.Name())
-	srv.SetLogger(handler.logger)
+	srv.SetLogger(handler.l)
+	s.l = handler.l
 	s.errorHandler = handler
 
 	return s
@@ -48,4 +52,8 @@ func (s Server) ServerWater(ctx context.Context, req interface{}) (resp interfac
 	}
 
 	return resp, nil
+}
+
+func (s Server) GetLogger() *zap.Logger {
+	return s.l
 }
