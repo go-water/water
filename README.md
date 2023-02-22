@@ -1,4 +1,4 @@
-go-water 是一个web辅助框架，帮助 web 框架（gin，iris）实现友好，优美的设计，定义一些接口、规范、约定，让整个系统变得更可读，更解耦，更容易协同开发。
+go-water 是一个设计层面的框架，帮助 web 框架（gin，iris）实现隔离友好，设计优美的系统，通过一系列接口、规范、约定，深度解耦系统。
 
 ### 星星增长趋势
 [![Stargazers over time](https://starchart.cc/go-water/water.svg)](https://starchart.cc/go-water/water)
