@@ -7,16 +7,11 @@ import (
 )
 
 type Config struct {
-	Level      zapcore.Level `yaml:"level"`
-	Encoding   string        `yaml:"encoding"`
-	CallFull   bool          `yaml:"call_full"`
-	MaxSize    int           `yaml:"max_size"`
-	MaxAge     int           `yaml:"max_age"`
-	MaxBackups int           `yaml:"max_backups"`
-	LocalTime  bool          `yaml:"local_time"`
-	Compress   bool          `yaml:"compress"`
-	Color      bool          `yaml:"color"`
-	AddCaller  bool          `yaml:"add_caller"`
+	Level     zapcore.Level `yaml:"level"`
+	Encoding  string        `yaml:"encoding"`
+	CallFull  bool          `yaml:"call_full"`
+	Color     bool          `yaml:"color"`
+	AddCaller bool          `yaml:"add_caller"`
 }
 
 func (conf *Config) NewLogger() *zap.Logger {
