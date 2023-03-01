@@ -6,7 +6,7 @@ import (
 )
 
 type Handler interface {
-	ServerWater(ctx context.Context, req interface{}) (interface{}, error)
+	ServerWater(ctx context.Context, req any) (any, error)
 	GetLogger() *zap.Logger
 }
 
@@ -36,7 +36,7 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 	return s
 }
 
-func (s Server) ServerWater(ctx context.Context, req interface{}) (resp interface{}, err error) {
+func (s Server) ServerWater(ctx context.Context, req any) (resp any, err error) {
 	if len(s.finalizer) > 0 {
 		defer func() {
 			for _, fn := range s.finalizer {
