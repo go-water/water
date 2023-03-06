@@ -6,4 +6,5 @@ type Service interface {
 	Endpoint() Endpoint
 	Name() string
 	SetLogger(l *zap.Logger)
+	GetRequest() any
 }
