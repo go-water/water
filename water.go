@@ -8,7 +8,3 @@ type Service interface {
 	SetLogger(l *zap.Logger)
 	GetRequest() any
 }
-
-type ServiceName interface {
-	GetServiceName(srv Service) string
-}
