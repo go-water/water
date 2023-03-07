@@ -9,6 +9,7 @@ import (
 type Handler interface {
 	ServerWater(ctx context.Context, req any) (any, error)
 	GetLogger() *zap.Logger
+	GetRequest() any
 }
 
 type Server struct {
