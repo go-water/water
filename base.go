@@ -10,7 +10,7 @@ type ServerBase struct {
 	l *zap.Logger
 }
 
-func (s *ServerBase) GetServiceName(srv Service) string {
+func (s *ServerBase) Name(srv Service) string {
 	fullName := fmt.Sprintf("%T", srv)
 	index := strings.LastIndex(fullName, ".")
 	name := fullName[index+1:]
