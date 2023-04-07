@@ -29,22 +29,22 @@ func SetAuthToken(uniqueUser, privateKey string, expire time.Duration) (tokenStr
 	return tokenString, nil
 }
 
-func ParseAndValid(req *http.Request, privateKey string) (uniqueUser string, err error) {
+func ParseAndValid(req *http.Request, privateKey string) (uniqueUser, signature string, err error) {
 	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor, func(t *jwt.Token) (interface{}, error) {
 		return []byte(privateKey), nil
 	}, request.WithClaims(&jwt.RegisteredClaims{}))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	if !token.Valid {
-		return "", jwt.ErrTokenSignatureInvalid
+		return "", "", jwt.ErrTokenSignatureInvalid
 	}
 
 	claims, ok := token.Claims.(*jwt.RegisteredClaims)
 	if !ok {
-		return "", jwt.ErrTokenInvalidClaims
+		return "", "", jwt.ErrTokenInvalidClaims
 	}
 
-	return claims.Issuer, nil
+	return claims.Issuer, token.Signature, nil
 }
