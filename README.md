@@ -8,6 +8,13 @@ go-water 是一款设计层面的框架，帮助 web 框架（gin，iris，beego
 go get -u github.com/go-water/water
 ```
 
+### 技术概览
++ zap 日志
++ jwt 登陆认证
++ errors 自定义处理
++ pool 管理请求参数
++ option 配置修改
+
 ### 样例仓库
 + [https://github.com/go-water/go-water](https://github.com/go-water/go-water)
 
