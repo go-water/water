@@ -2,7 +2,10 @@ module github.com/go-water/water
 
 go 1.17
 
-require go.uber.org/zap v1.24.0
+require (
+	github.com/golang-jwt/jwt/v4 v4.5.0
+	go.uber.org/zap v1.24.0
+)
 
 require (
 	github.com/stretchr/testify v1.8.1 // indirect
