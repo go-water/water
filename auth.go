@@ -25,7 +25,7 @@ func SetAuthToken(uniqueUser, privateKey string, expire time.Duration) (tokenStr
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expire)),
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS512, claims)
 	tokenString, err = token.SignedString(signingKey)
 	if err != nil {
 		return "", err
