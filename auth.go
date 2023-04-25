@@ -1,6 +1,7 @@
 package water
 
 import (
+	"encoding/base64"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang-jwt/jwt/v4/request"
 	"net/http"
@@ -9,13 +10,22 @@ import (
 )
 
 func SetAuthToken(uniqueUser, privateKey string, expire time.Duration) (tokenString string, err error) {
+	pri, err := base64.StdEncoding.DecodeString(privateKey)
+	if err != nil {
+		return "", err
+	}
+
+	signingKey, err := jwt.ParseRSAPrivateKeyFromPEM(pri)
+	if err != nil {
+		return "", err
+	}
+
 	claims := jwt.RegisteredClaims{
 		Issuer:    uniqueUser,
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expire)),
 	}
 
-	signingKey := []byte(privateKey)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	tokenString, err = token.SignedString(signingKey)
 	if err != nil {
 		return "", err
@@ -29,9 +39,14 @@ func SetAuthToken(uniqueUser, privateKey string, expire time.Duration) (tokenStr
 	return tokenString, nil
 }
 
-func ParseAndValid(req *http.Request, privateKey string) (uniqueUser, signature string, err error) {
+func ParseAndValid(req *http.Request, publicKey string) (uniqueUser, signature string, err error) {
+	pub, err := base64.StdEncoding.DecodeString(publicKey)
+	if err != nil {
+		return "", "", err
+	}
+
 	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor, func(t *jwt.Token) (interface{}, error) {
-		return []byte(privateKey), nil
+		return jwt.ParseRSAPublicKeyFromPEM(pub)
 	}, request.WithClaims(&jwt.RegisteredClaims{}))
 	if err != nil {
 		return "", "", err
