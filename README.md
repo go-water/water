@@ -10,6 +10,7 @@ go get -u github.com/go-water/water
 
 ### 技术概览
 + zap 日志
++ rsa 加密，openssl 生成公/私钥对
 + jwt 登陆认证
 + errors 自定义处理
 + pool 管理请求参数
