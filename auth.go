@@ -1,21 +1,21 @@
 package water
 
 import (
-	"encoding/base64"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang-jwt/jwt/v4/request"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
 
-func SetAuthToken(uniqueUser, privateKey string, expire time.Duration) (tokenString string, err error) {
-	pri, err := base64.StdEncoding.DecodeString(privateKey)
+func SetAuthToken(uniqueUser, privateKeyPath string, expire time.Duration) (tokenString string, err error) {
+	privateKey, err := os.ReadFile(privateKeyPath)
 	if err != nil {
 		return "", err
 	}
 
-	signingKey, err := jwt.ParseRSAPrivateKeyFromPEM(pri)
+	signingKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
 	if err != nil {
 		return "", err
 	}
@@ -39,14 +39,14 @@ func SetAuthToken(uniqueUser, privateKey string, expire time.Duration) (tokenStr
 	return tokenString, nil
 }
 
-func ParseAndValid(req *http.Request, publicKey string) (uniqueUser, signature string, err error) {
-	pub, err := base64.StdEncoding.DecodeString(publicKey)
-	if err != nil {
-		return "", "", err
-	}
-
+func ParseAndValid(req *http.Request, publicKeyPath string) (uniqueUser, signature string, err error) {
 	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor, func(t *jwt.Token) (interface{}, error) {
-		return jwt.ParseRSAPublicKeyFromPEM(pub)
+		publicKey, innErr := os.ReadFile(publicKeyPath)
+		if innErr != nil {
+			return "", innErr
+		}
+
+		return jwt.ParseRSAPublicKeyFromPEM(publicKey)
 	}, request.WithClaims(&jwt.RegisteredClaims{}))
 	if err != nil {
 		return "", "", err
