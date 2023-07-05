@@ -49,11 +49,8 @@ func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, sign
 
 		return jwt.ParseRSAPublicKeyFromPEM(publicKey)
 	}, request.WithClaims(&jwt.RegisteredClaims{}))
-	if err != nil {
-		return "", "", err
-	}
 
-	if token.Valid {
+	if token != nil && token.Valid {
 		return parseToken(token)
 	}
 
