@@ -39,6 +39,7 @@ func SetAuthToken(uniqueUser, privateKeyPath string, expire time.Duration) (toke
 	return tokenString, nil
 }
 
+// ParseFromRequest 兼容 http,ws
 func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, signature string, err error) {
 	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor, func(t *jwt.Token) (interface{}, error) {
 		publicKey, innErr := os.ReadFile(publicKeyPath)
@@ -52,24 +53,13 @@ func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, sign
 		return "", "", err
 	}
 
-	wsp := req.Header.Get("Sec-Websocket-Protocol")
-
-	if !token.Valid && len(wsp) > 0 {
-		return "", "", jwt.ErrTokenSignatureInvalid
+	if token.Valid {
+		return parseToken(token)
 	}
 
-	claims, ok := token.Claims.(*jwt.RegisteredClaims)
-	if !ok {
-		return "", "", jwt.ErrTokenInvalidClaims
-	}
-
-	return claims.Issuer, token.Signature, nil
-}
-
-func ParseWithClaims(req *http.Request, publicKeyPath string) (uniqueUser, signature string, err error) {
-	wsp := req.Header.Get("Sec-Websocket-Protocol")
-	if len(wsp) > 0 {
-		token, er := jwt.ParseWithClaims(wsp, &jwt.RegisteredClaims{}, func(t *jwt.Token) (interface{}, error) {
+	// 兼容 ws
+	if wsp := req.Header.Get("Sec-Websocket-Protocol"); len(wsp) > 0 {
+		token, err = jwt.ParseWithClaims(wsp, &jwt.RegisteredClaims{}, func(t *jwt.Token) (interface{}, error) {
 			publicKey, innErr := os.ReadFile(publicKeyPath)
 			if innErr != nil {
 				return "", innErr
@@ -77,26 +67,23 @@ func ParseWithClaims(req *http.Request, publicKeyPath string) (uniqueUser, signa
 
 			return jwt.ParseRSAPublicKeyFromPEM(publicKey)
 		})
-		if er != nil {
-			return "", "", er
+		if err != nil {
+			return "", "", err
 		}
 
-		if !token.Valid && len(wsp) > 0 {
-			return "", "", jwt.ErrTokenSignatureInvalid
+		if token.Valid {
+			return parseToken(token)
 		}
-
-		claims, ok := token.Claims.(*jwt.RegisteredClaims)
-		if !ok {
-			return "", "", jwt.ErrTokenInvalidClaims
-		}
-
-		//issuer, er := claims.GetIssuer()
-		//if er != nil {
-		//	return "", "", er
-		//}
-
-		return claims.Issuer, token.Signature, nil
 	}
 
-	return "", "", nil
+	return "", "", jwt.ErrTokenSignatureInvalid
+}
+
+func parseToken(token *jwt.Token) (uniqueUser, signature string, err error) {
+	claims, ok := token.Claims.(*jwt.RegisteredClaims)
+	if !ok {
+		return "", "", jwt.ErrTokenInvalidClaims
+	}
+
+	return claims.Issuer, token.Signature, nil
 }
