@@ -24,7 +24,3 @@ func (s *ServerBase) GetLogger() *zap.Logger {
 func (s *ServerBase) SetLogger(l *zap.Logger) {
 	s.l = l
 }
-
-func (s *ServerBase) GetRequest() any {
-	return nil
-}
