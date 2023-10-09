@@ -26,7 +26,7 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 		option(s)
 	}
 
-	handler := NewLogErrorHandler(NewLogger(), srv.Name(srv))
+	handler := NewLogErrorHandler(log, srv.Name(srv))
 	srv.SetLogger(handler.l)
 	s.l = handler.l
 	s.errorHandler = handler
