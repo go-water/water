@@ -6,7 +6,7 @@ import (
 
 var log *zap.Logger
 
-func init() {
+func InitZap() {
 	log = NewLogger()
 }
 
