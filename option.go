@@ -13,7 +13,3 @@ type ServerFinalizerFunc func(ctx context.Context, err error)
 func ServerFinalizer(f ...ServerFinalizerFunc) ServerOption {
 	return func(s *Server) { s.finalizer = append(s.finalizer, f...) }
 }
-
-func ServerConfig(c *Config) ServerOption {
-	return func(s *Server) { s.c = c }
-}

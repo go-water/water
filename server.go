@@ -11,7 +11,6 @@ type Handler interface {
 }
 
 type Server struct {
-	c            *Config
 	e            Endpoint
 	finalizer    []ServerFinalizerFunc
 	errorHandler ErrorHandler
@@ -21,14 +20,13 @@ type Server struct {
 func NewHandler(srv Service, options ...ServerOption) Handler {
 	s := &Server{
 		e: srv.Endpoint(),
-		c: new(Config),
 	}
 
 	for _, option := range options {
 		option(s)
 	}
 
-	handler := NewLogErrorHandler(s.c.NewLogger(), srv.Name(srv))
+	handler := NewLogErrorHandler(NewLogger(), srv.Name(srv))
 	srv.SetLogger(handler.l)
 	s.l = handler.l
 	s.errorHandler = handler
