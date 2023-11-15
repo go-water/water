@@ -2,7 +2,10 @@ package water
 
 import (
 	"context"
+	"github.com/go-water/water/endpoint"
+	"github.com/go-water/water/ratelimit"
 	"go.uber.org/zap"
+	"golang.org/x/time/rate"
 )
 
 type Handler interface {
@@ -11,19 +14,23 @@ type Handler interface {
 }
 
 type Server struct {
-	e            Endpoint
+	e            endpoint.Endpoint
 	finalizer    []ServerFinalizerFunc
 	errorHandler ErrorHandler
 	l            *zap.Logger
+	limit        *rate.Limiter
 }
 
 func NewHandler(srv Service, options ...ServerOption) Handler {
-	s := &Server{
-		e: srv.Endpoint(),
-	}
-
+	s := new(Server)
 	for _, option := range options {
 		option(s)
+	}
+
+	if s.limit != nil {
+		s.e = ratelimit.NewErrorLimiter(s.limit)(srv.Endpoint())
+	} else {
+		s.e = srv.Endpoint()
 	}
 
 	handler := NewLogErrorHandler(log, srv.Name(srv))
