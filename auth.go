@@ -41,7 +41,7 @@ func SetAuthToken(uniqueUser, privateKeyPath string, expire time.Duration) (toke
 
 // ParseFromRequest 兼容 http,ws
 func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, signature string, err error) {
-	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor, func(t *jwt.Token) (interface{}, error) {
+	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor, func(t *jwt.Token) (any, error) {
 		publicKey, innErr := os.ReadFile(publicKeyPath)
 		if innErr != nil {
 			return "", innErr
@@ -56,7 +56,7 @@ func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, sign
 
 	// 兼容 ws
 	if wsp := req.Header.Get("Sec-Websocket-Protocol"); len(wsp) > 0 {
-		token, err = jwt.ParseWithClaims(wsp, &jwt.RegisteredClaims{}, func(t *jwt.Token) (interface{}, error) {
+		token, err = jwt.ParseWithClaims(wsp, &jwt.RegisteredClaims{}, func(t *jwt.Token) (any, error) {
 			publicKey, innErr := os.ReadFile(publicKeyPath)
 			if innErr != nil {
 				return "", innErr

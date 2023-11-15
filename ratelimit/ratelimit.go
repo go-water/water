@@ -12,7 +12,7 @@ type Allowing interface {
 
 func NewErrorLimiter(limit Allowing) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
-		return func(ctx context.Context, request interface{}) (interface{}, error) {
+		return func(ctx context.Context, request any) (any, error) {
 			if !limit.Allow() {
 				return nil, consterr.ErrLimited
 			}
@@ -27,7 +27,7 @@ type Waiting interface {
 
 func NewDelayingLimiter(limit Waiting) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
-		return func(ctx context.Context, request interface{}) (interface{}, error) {
+		return func(ctx context.Context, request any) (any, error) {
 			if err := limit.Wait(ctx); err != nil {
 				return nil, err
 			}
