@@ -15,6 +15,7 @@ go get -u github.com/go-water/water
 + errors 自定义处理
 + pool 管理请求参数
 + option 配置修改
++ rate limit
 
 ### 样例仓库
 + [https://github.com/go-water/go-water](https://github.com/go-water/go-water)
