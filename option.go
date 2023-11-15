@@ -18,8 +18,8 @@ func ServerFinalizer(f ...ServerFinalizerFunc) ServerOption {
 	return func(s *Server) { s.finalizer = append(s.finalizer, f...) }
 }
 
-func ServerLimiter(d time.Duration, t int) ServerOption {
+func ServerLimiter(interval time.Duration, b int) ServerOption {
 	return func(s *Server) {
-		s.limit = rate.NewLimiter(rate.Every(d), t)
+		s.limit = rate.NewLimiter(rate.Every(interval), b)
 	}
 }
