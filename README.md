@@ -15,7 +15,8 @@ go get -u github.com/go-water/water
 + errors 自定义处理
 + pool 管理请求参数
 + option 配置修改
-+ rate limit
++ rate limit（限流）
++ circuit breaker（熔断）
 
 ### 样例仓库
 + [https://github.com/go-water/go-water](https://github.com/go-water/go-water)

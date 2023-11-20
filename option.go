@@ -2,6 +2,7 @@ package water
 
 import (
 	"context"
+	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
 	"time"
 )
@@ -21,5 +22,11 @@ func ServerFinalizer(f ...ServerFinalizerFunc) ServerOption {
 func ServerLimiter(interval time.Duration, b int) ServerOption {
 	return func(s *Server) {
 		s.limit = rate.NewLimiter(rate.Every(interval), b)
+	}
+}
+
+func ServerBreaker(breaker *gobreaker.CircuitBreaker) ServerOption {
+	return func(s *Server) {
+		s.breaker = breaker
 	}
 }

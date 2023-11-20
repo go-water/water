@@ -2,8 +2,10 @@ package water
 
 import (
 	"context"
+	"github.com/go-water/water/circuitbreaker"
 	"github.com/go-water/water/endpoint"
 	"github.com/go-water/water/ratelimit"
+	"github.com/sony/gobreaker"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 )
@@ -19,6 +21,7 @@ type Server struct {
 	errorHandler ErrorHandler
 	l            *zap.Logger
 	limit        *rate.Limiter
+	breaker      *gobreaker.CircuitBreaker
 }
 
 func NewHandler(srv Service, options ...ServerOption) Handler {
@@ -27,10 +30,12 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 		option(s)
 	}
 
+	s.e = srv.Endpoint()
 	if s.limit != nil {
-		s.e = ratelimit.NewErrorLimiter(s.limit)(srv.Endpoint())
-	} else {
-		s.e = srv.Endpoint()
+		s.e = ratelimit.NewErrorLimiter(s.limit)(s.e)
+	}
+	if s.breaker != nil {
+		s.e = circuitbreaker.GoBreaker(s.breaker)(s.e)
 	}
 
 	handler := NewLogErrorHandler(log, srv.Name(srv))
