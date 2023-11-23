@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func SetAuthToken(uniqueUser, privateKeyPath string, expire time.Duration) (tokenString string, err error) {
+func SetAuthToken(uniqueUser, issuer, privateKeyPath string, expire time.Duration) (tokenString string, err error) {
 	privateKey, err := os.ReadFile(privateKeyPath)
 	if err != nil {
 		return "", err
@@ -21,7 +21,8 @@ func SetAuthToken(uniqueUser, privateKeyPath string, expire time.Duration) (toke
 	}
 
 	claims := jwt.RegisteredClaims{
-		Issuer:    uniqueUser,
+		ID:        uniqueUser,
+		Issuer:    issuer,
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expire)),
 	}
 
@@ -40,7 +41,7 @@ func SetAuthToken(uniqueUser, privateKeyPath string, expire time.Duration) (toke
 }
 
 // ParseFromRequest 兼容 http,ws
-func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, signature string, err error) {
+func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, issuer, signature string, err error) {
 	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor, func(t *jwt.Token) (any, error) {
 		publicKey, innErr := os.ReadFile(publicKeyPath)
 		if innErr != nil {
@@ -65,7 +66,7 @@ func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, sign
 			return jwt.ParseRSAPublicKeyFromPEM(publicKey)
 		})
 		if err != nil {
-			return "", "", err
+			return "", "", "", err
 		}
 
 		if token.Valid {
@@ -73,14 +74,14 @@ func ParseFromRequest(req *http.Request, publicKeyPath string) (uniqueUser, sign
 		}
 	}
 
-	return "", "", jwt.ErrTokenSignatureInvalid
+	return "", "", "", jwt.ErrTokenSignatureInvalid
 }
 
-func parseToken(token *jwt.Token) (uniqueUser, signature string, err error) {
+func parseToken(token *jwt.Token) (uniqueUser, issuer, signature string, err error) {
 	claims, ok := token.Claims.(*jwt.RegisteredClaims)
 	if !ok {
-		return "", "", jwt.ErrTokenInvalidClaims
+		return "", "", "", jwt.ErrTokenInvalidClaims
 	}
 
-	return claims.Issuer, token.Signature, nil
+	return claims.ID, claims.Issuer, token.Signature, nil
 }
