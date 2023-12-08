@@ -22,4 +22,4 @@ go get -u github.com/go-water/water
 + [https://github.com/go-water/go-water](https://github.com/go-water/go-water)
 
 ### 官方文档
-+ [https://go-water.cn](https://go-water.cn)
++ [https://iissy.com/go-water](https://iissy.com/go-water)
