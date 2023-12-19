@@ -61,16 +61,17 @@ func (s *Server) endpoint(service Service) endpoint.Endpoint {
 			return nil, errors.New("method Handle does not return two arguments")
 		}
 
-		err, ok := returnValues[1].Interface().(error)
-		if ok {
-			if err == nil {
-				return returnValues[0].Interface(), nil
-			} else {
-				return nil, err
+		returnValue := returnValues[1].Interface()
+		if returnValue == nil {
+			return returnValues[0].Interface(), nil
+		} else {
+			er, ok := returnValue.(error)
+			if ok {
+				return nil, er
 			}
-		}
 
-		return nil, errors.New("method Handle return arguments error")
+			return nil, errors.New("method Handle return argument not include error type")
+		}
 	}
 }
 
