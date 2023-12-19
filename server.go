@@ -51,7 +51,7 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 
 func (s *Server) endpoint(service Service) endpoint.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
-		function, srv, ctxV, reqV, err := s.readRequest(service, req)
+		function, srv, ctxV, reqV, err := s.readRequest(ctx, service, req)
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +75,7 @@ func (s *Server) endpoint(service Service) endpoint.Endpoint {
 	}
 }
 
-func (s *Server) readRequest(service Service, req any) (function, srv, ctx, reqV reflect.Value, err error) {
+func (s *Server) readRequest(ctx context.Context, service Service, req any) (function, srv, ctxV, reqV reflect.Value, err error) {
 	typ := reflect.TypeOf(service)
 	srv = reflect.ValueOf(service)
 
@@ -84,10 +84,8 @@ func (s *Server) readRequest(service Service, req any) (function, srv, ctx, reqV
 		mType := method.Type
 		num := mType.NumIn()
 		if num == 3 {
-			contextType := mType.In(1)
 			argType := mType.In(2)
-
-			ctx = reflect.Zero(contextType)
+			ctxV = reflect.ValueOf(ctx)
 			reqV = reflect.New(argType.Elem())
 			function = method.Func
 			err = s.decodeRequest(req, reqV.Interface())
