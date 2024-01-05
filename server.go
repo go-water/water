@@ -2,7 +2,6 @@ package water
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"github.com/go-water/water/circuitbreaker"
 	"github.com/go-water/water/endpoint"
@@ -56,7 +55,7 @@ func (s *Server) endpoint(service Service) endpoint.Endpoint {
 			return nil, err
 		}
 
-		returnValues := function.Call([]reflect.Value{srv, ctxV, reflect.ValueOf(reqV.Interface())})
+		returnValues := function.Call([]reflect.Value{srv, ctxV, reqV})
 		if len(returnValues) != 2 {
 			return nil, errors.New("method Handle does not return two arguments")
 		}
@@ -84,11 +83,9 @@ func (s *Server) readRequest(ctx context.Context, service Service, req any) (fun
 		mType := method.Type
 		num := mType.NumIn()
 		if num == 3 {
-			argType := mType.In(2)
 			ctxV = reflect.ValueOf(ctx)
-			reqV = reflect.New(argType.Elem())
+			reqV = reflect.ValueOf(req)
 			function = method.Func
-			err = s.decodeRequest(req, reqV.Interface())
 		} else {
 			err = errors.New("method Handle does not include two parameters")
 		}
@@ -97,15 +94,6 @@ func (s *Server) readRequest(ctx context.Context, service Service, req any) (fun
 	}
 
 	return
-}
-
-func (s *Server) decodeRequest(r, v any) (err error) {
-	buf, err := json.Marshal(r)
-	if err == nil {
-		err = json.Unmarshal(buf, v)
-	}
-
-	return err
 }
 
 func (s *Server) ServerWater(ctx context.Context, req any) (resp any, err error) {
