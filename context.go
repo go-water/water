@@ -3,6 +3,8 @@ package water
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-water/water/binding"
+	"github.com/go-water/water/render"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -11,8 +13,6 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
-
-	"github.com/go-water/water/binding"
 )
 
 const ContextKey = "_go-water/context-key"
@@ -29,6 +29,7 @@ type Context struct {
 	Keys map[string]any
 
 	sameSite http.SameSite
+	Router   *Router
 }
 
 func (c *Context) Param(key string) string {
@@ -78,6 +79,21 @@ func (c *Context) Get(key string) (value any, exists bool) {
 	return
 }
 
+func (c *Context) GetString(key string) (s string) {
+	if val, ok := c.Get(key); ok && val != nil {
+		s, _ = val.(string)
+	}
+	return
+}
+
+func (c *Context) Redirect(code int, location string) {
+	c.Render(-1, render.Redirect{
+		Code:     code,
+		Location: location,
+		Request:  c.Request,
+	})
+}
+
 func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
 	if c.Request.MultipartForm == nil {
 		if err := c.Request.ParseMultipartForm(MaxMultipartMemory); err != nil {
@@ -111,6 +127,10 @@ func (c *Context) SaveUploadedFile(file *multipart.FileHeader, dst string) error
 
 	_, err = io.Copy(out, src)
 	return err
+}
+
+func (c *Context) File(filepath string) {
+	http.ServeFile(c.Writer, c.Request, filepath)
 }
 
 func (c *Context) Header(key, value string) {
@@ -150,6 +170,45 @@ func (c *Context) Cookie(name string) (string, error) {
 	return val, nil
 }
 
+func (c *Context) HTML(code int, name string, obj any) {
+	instance := c.Router.HTMLRender.Instance(name, obj)
+	c.Render(code, instance)
+}
+
+func bodyAllowedForStatus(status int) bool {
+	switch {
+	case status >= 100 && status <= 199:
+		return false
+	case status == http.StatusNoContent:
+		return false
+	case status == http.StatusNotModified:
+		return false
+	}
+	return true
+}
+
+// Status sets the HTTP response code.
+func (c *Context) Status(code int) {
+	c.Writer.WriteHeader(code)
+}
+
+func (c *Context) Render(code int, r render.Render) {
+	//c.Status(code)
+
+	if !bodyAllowedForStatus(code) {
+		r.WriteContentType(c.Writer)
+		//c.Writer.WriteHeaderNow()
+		return
+	}
+
+	if err := r.Render(c.Writer); err != nil {
+		// Pushing error to c.Errors
+		//_ = c.Error(err)
+		//c.Abort()
+		return
+	}
+}
+
 func BindJSON[T any](c *Context) (t *T, err error) {
 	defer func() {
 		if p := recover(); p != nil {
@@ -175,33 +234,33 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 /************************************/
 
 // hasRequestContext returns whether c.Request has Context and fallback.
-//func (c *Context) hasRequestContext() bool {
-//	hasFallback := c.engine != nil && c.engine.ContextWithFallback
-//	hasRequestContext := c.Request != nil && c.Request.Context() != nil
-//	return hasFallback && hasRequestContext
-//}
+func (c *Context) hasRequestContext() bool {
+	hasFallback := c.Router != nil && c.Router.ContextWithFallback
+	hasRequestContext := c.Request != nil && c.Request.Context() != nil
+	return hasFallback && hasRequestContext
+}
 
 // Deadline returns that there is no deadline (ok==false) when c.Request has no Context.
 func (c *Context) Deadline() (deadline time.Time, ok bool) {
-	//if !c.hasRequestContext() {
-	//	return
-	//}
+	if !c.hasRequestContext() {
+		return
+	}
 	return c.Request.Context().Deadline()
 }
 
 // Done returns nil (chan which will wait forever) when c.Request has no Context.
 func (c *Context) Done() <-chan struct{} {
-	//if !c.hasRequestContext() {
-	//	return nil
-	//}
+	if !c.hasRequestContext() {
+		return nil
+	}
 	return c.Request.Context().Done()
 }
 
 // Err returns nil when c.Request has no Context.
 func (c *Context) Err() error {
-	//if !c.hasRequestContext() {
-	//	return nil
-	//}
+	if !c.hasRequestContext() {
+		return nil
+	}
 	return c.Request.Context().Err()
 }
 
@@ -220,8 +279,8 @@ func (c *Context) Value(key any) any {
 			return val
 		}
 	}
-	//if !c.hasRequestContext() {
-	//	return nil
-	//}
+	if !c.hasRequestContext() {
+		return nil
+	}
 	return c.Request.Context().Value(key)
 }
