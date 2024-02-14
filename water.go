@@ -20,7 +20,7 @@ type Router struct {
 	HTMLRender  render.HTMLRender
 	scope       string
 	routes      map[string]HandlerFunc
-	middlewares []func(HandlerFunc) HandlerFunc
+	middlewares []Middleware
 	base        *base
 	pool        sync.Pool
 
@@ -29,27 +29,27 @@ type Router struct {
 }
 
 type base struct {
-	global []func(HandlerFunc) HandlerFunc
+	global []func(http.Handler) http.Handler
 	routes map[string]*Router
 }
 
-var rt *Router
+var ROUTER *Router
 
 type HandlerFunc func(*Context)
 
 func NewRouter() *Router {
-	rt = &Router{
+	ROUTER = &Router{
 		routes: make(map[string]HandlerFunc),
 		base: &base{
-			global: make([]func(HandlerFunc) HandlerFunc, 0),
+			global: make([]func(http.Handler) http.Handler, 0),
 			routes: make(map[string]*Router),
 		},
 	}
-	rt.base.routes[""] = rt
-	rt.pool.New = func() any {
-		return rt.allocateContext()
+	ROUTER.base.routes[""] = ROUTER
+	ROUTER.pool.New = func() any {
+		return ROUTER.allocateContext()
 	}
-	return rt
+	return ROUTER
 }
 
 func (r *Router) allocateContext() *Context {
@@ -86,8 +86,8 @@ func (r *Router) Method(method, route string, handler HandlerFunc) {
 		route += "{$}"
 	}
 
-	rt := r.base.routes[r.scope]
-	rt.routes[method+" "+r.scope+route] = r.withMiddlewares(handler)
+	router := r.base.routes[r.scope]
+	router.routes[method+" "+r.scope+route] = r.withMiddlewares(handler)
 }
 
 func (r *Router) StaticFile(relativePath, filepath string) *Router {
@@ -173,7 +173,7 @@ func lastChar(str string) uint8 {
 	return str[len(str)-1]
 }
 
-func (r *Router) Use(middlewares ...func(HandlerFunc) HandlerFunc) {
+func (r *Router) Use(middlewares ...Middleware) {
 	slices.Reverse(middlewares)
 	r.middlewares = slices.Concat(middlewares, r.middlewares)
 }
@@ -182,7 +182,7 @@ func (handle HandlerFunc) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := new(Context)
 	ctx.Writer = w
 	ctx.Request = req
-	ctx.Router = rt
+	ctx.Router = ROUTER
 
 	handle(ctx)
 }
@@ -195,13 +195,18 @@ func (r *Router) Serve(addr string, server ...*http.Server) error {
 		}
 	}
 
+	var h http.Handler = handler
+	for _, middleware := range r.base.global {
+		h = middleware(h)
+	}
+
 	srv := &http.Server{
 		ReadHeaderTimeout: time.Second * 45,
 	}
 	if len(server) != 0 {
 		srv = server[0]
 	}
-	srv.Addr, srv.Handler = addr, handler
+	srv.Addr, srv.Handler = addr, h
 
 	return srv.ListenAndServe()
 }
