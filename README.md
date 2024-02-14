@@ -1,4 +1,4 @@
-简介：go-water 是一款设计层面的框架，帮助您更好的使用 web 框架（比如：gin，iris，beego，echo等），更好的业务隔离，更好的系统设计，通过一系列接口、规范、约定、中间件，深度解耦业务系统。
+简介：go-water 是一款设计层面的 web 框架（像 gin，iris，beego，echo 一样，追求卓越）。 我们使命：更好的业务隔离，更好的系统设计，通过一系列接口、规范、约定、中间件，深度解耦业务系统。
 
 ### 星星增长趋势
 [![Stargazers over time](https://starchart.cc/go-water/water.svg)](https://starchart.cc/go-water/water)
@@ -23,3 +23,6 @@ go get -u github.com/go-water/water
 
 ### 官方文档
 + [https://iissy.com/go-water](https://iissy.com/go-water)
+
+### 注意
+文档暂时还未来得及更新，请以源码为准。（v1.0.0预计4月1日发版，文档，样例将同步更新）
