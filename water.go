@@ -10,16 +10,51 @@ import (
 	"time"
 )
 
+type Meili struct {
+	Router
+	ContextWithFallback bool
+	HTMLRender          render.HTMLRender
+	pool                sync.Pool
+}
+
+func (m *Meili) allocateContext() *Context {
+	return &Context{meili: m}
+}
+
+func (m *Meili) Serve(addr string, server ...*http.Server) error {
+	handler := &http.ServeMux{}
+	for _, rt := range m.base.routes {
+		for url, handle := range rt.routes {
+			hdl := new(MeiliHandler)
+			hdl.m = m
+			hdl.h = handle
+			handler.Handle(url, hdl)
+		}
+	}
+
+	var h http.Handler = handler
+	for _, middleware := range m.base.global {
+		h = middleware(h)
+	}
+
+	srv := &http.Server{
+		ReadHeaderTimeout: time.Second * 45,
+	}
+	if len(server) != 0 {
+		srv = server[0]
+	}
+	srv.Addr, srv.Handler = addr, h
+
+	return srv.ListenAndServe()
+}
+
 type Router struct {
-	HTMLRender  render.HTMLRender
 	scope       string
 	routes      map[string]HandlerFunc
 	middlewares []Middleware
 	base        *base
-	pool        sync.Pool
 
-	basePath            string
-	ContextWithFallback bool
+	basePath string
 }
 
 type base struct {
@@ -27,27 +62,23 @@ type base struct {
 	routes map[string]*Router
 }
 
-var ROUTER *Router
-
-type HandlerFunc func(*Context)
-
-func NewRouter() *Router {
-	ROUTER = &Router{
-		routes: make(map[string]HandlerFunc),
-		base: &base{
-			global: make([]HttpHandler, 0),
-			routes: make(map[string]*Router),
+func New() *Meili {
+	meili := &Meili{
+		Router: Router{
+			routes: make(map[string]HandlerFunc),
+			base: &base{
+				global: make([]HttpHandler, 0),
+				routes: make(map[string]*Router),
+			},
 		},
 	}
-	ROUTER.base.routes[""] = ROUTER
-	ROUTER.pool.New = func() any {
-		return ROUTER.allocateContext()
-	}
-	return ROUTER
-}
 
-func (r *Router) allocateContext() *Context {
-	return &Context{Router: r}
+	meili.base.routes[""] = &meili.Router
+	meili.pool.New = func() any {
+		return meili.allocateContext()
+	}
+
+	return meili
 }
 
 func (r *Router) Group(prefix string) *Router {
@@ -99,13 +130,10 @@ func (r *Router) staticFileHandler(relativePath string, handler HandlerFunc) *Ro
 	return r
 }
 
-// router.Static("/static", "/var/www")
 func (r *Router) Static(relativePath, root string) *Router {
 	return r.StaticFS(relativePath, Dir(root, false))
 }
 
-// StaticFS works just like `Static()` but a custom `http.FileSystem` can be used instead.
-// Gin by default uses: gin.Dir()
 func (r *Router) StaticFS(relativePath string, fs http.FileSystem) *Router {
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL parameters can not be used when serving a static folder")
@@ -113,7 +141,6 @@ func (r *Router) StaticFS(relativePath string, fs http.FileSystem) *Router {
 	handler := r.createStaticHandler(relativePath, fs)
 	urlPattern := path.Join(relativePath, "{path...}")
 
-	// Register GET and HEAD handlers
 	r.GET(urlPattern, handler)
 	r.HEAD(urlPattern, handler)
 	return r
@@ -148,61 +175,9 @@ func (r *Router) calculateAbsolutePath(relativePath string) string {
 	return joinPaths(r.basePath, relativePath)
 }
 
-func joinPaths(absolutePath, relativePath string) string {
-	if relativePath == "" {
-		return absolutePath
-	}
-
-	finalPath := path.Join(absolutePath, relativePath)
-	if lastChar(relativePath) == '/' && lastChar(finalPath) != '/' {
-		return finalPath + "/"
-	}
-	return finalPath
-}
-
-func lastChar(str string) uint8 {
-	if str == "" {
-		panic("The length of the string can't be 0")
-	}
-	return str[len(str)-1]
-}
-
 func (r *Router) Use(middlewares ...Middleware) {
 	slices.Reverse(middlewares)
 	r.middlewares = slices.Concat(middlewares, r.middlewares)
-}
-
-func (handle HandlerFunc) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	ctx := new(Context)
-	ctx.Writer = w
-	ctx.Request = req
-	ctx.Router = ROUTER
-
-	handle(ctx)
-}
-
-func (r *Router) Serve(addr string, server ...*http.Server) error {
-	handler := &http.ServeMux{}
-	for _, rt := range r.base.routes {
-		for path, handle := range rt.routes {
-			handler.Handle(path, handle)
-		}
-	}
-
-	var h http.Handler = handler
-	for _, middleware := range r.base.global {
-		h = middleware(h)
-	}
-
-	srv := &http.Server{
-		ReadHeaderTimeout: time.Second * 45,
-	}
-	if len(server) != 0 {
-		srv = server[0]
-	}
-	srv.Addr, srv.Handler = addr, h
-
-	return srv.ListenAndServe()
 }
 
 func (r *Router) withMiddlewares(handler HandlerFunc) HandlerFunc {

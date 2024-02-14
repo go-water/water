@@ -29,7 +29,12 @@ type Context struct {
 	Keys map[string]any
 
 	sameSite http.SameSite
-	Router   *Router
+	meili    *Meili
+}
+
+func (c *Context) reset() {
+	c.sameSite = 0
+	c.Keys = nil
 }
 
 func (c *Context) Param(key string) string {
@@ -171,7 +176,7 @@ func (c *Context) Cookie(name string) (string, error) {
 }
 
 func (c *Context) HTML(code int, name string, obj any) {
-	instance := c.Router.HTMLRender.Instance(name, obj)
+	instance := c.meili.HTMLRender.Instance(name, obj)
 	c.Render(code, instance)
 }
 
@@ -237,7 +242,7 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 
 // hasRequestContext returns whether c.Request has Context and fallback.
 func (c *Context) hasRequestContext() bool {
-	hasFallback := c.Router != nil && c.Router.ContextWithFallback
+	hasFallback := c.meili != nil && c.meili.ContextWithFallback
 	hasRequestContext := c.Request != nil && c.Request.Context() != nil
 	return hasFallback && hasRequestContext
 }
