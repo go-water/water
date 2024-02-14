@@ -1,23 +1,23 @@
-package water
+package logger
 
 import (
 	"go.uber.org/zap"
 )
 
-var log *zap.Logger
+var Logger *zap.Logger
 
 func InitZap() {
-	log = NewLogger()
+	Logger = NewLogger()
 }
 
 func Info(msg string, fields ...zap.Field) {
-	log.Info(msg, fields...)
+	Logger.Info(msg, fields...)
 }
 
 func Warn(msg string, fields ...zap.Field) {
-	log.Warn(msg, fields...)
+	Logger.Warn(msg, fields...)
 }
 
 func Error(msg string, fields ...zap.Field) {
-	log.Error(msg, fields...)
+	Logger.Error(msg, fields...)
 }

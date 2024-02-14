@@ -1,10 +1,21 @@
 package water
 
 import (
+	"context"
 	"fmt"
 	"go.uber.org/zap"
 	"strings"
 )
+
+type Handler interface {
+	ServerWater(ctx context.Context, req any) (any, error)
+	GetLogger() *zap.Logger
+}
+
+type Service interface {
+	Name(srv Service) string
+	SetLogger(l *zap.Logger)
+}
 
 type ServerBase struct {
 	l *zap.Logger

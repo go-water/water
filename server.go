@@ -5,17 +5,13 @@ import (
 	"errors"
 	"github.com/go-water/water/circuitbreaker"
 	"github.com/go-water/water/endpoint"
+	"github.com/go-water/water/logger"
 	"github.com/go-water/water/ratelimit"
 	"github.com/sony/gobreaker"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 	"reflect"
 )
-
-type Handler interface {
-	ServerWater(ctx context.Context, req any) (any, error)
-	GetLogger() *zap.Logger
-}
 
 type Server struct {
 	e            endpoint.Endpoint
@@ -40,9 +36,9 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 		s.e = circuitbreaker.GoBreaker(s.breaker)(s.e)
 	}
 
-	handler := NewLogErrorHandler(log, srv.Name(srv))
-	srv.SetLogger(handler.l)
-	s.l = handler.l
+	handler := NewLogErrorHandler(logger.Logger, srv.Name(srv))
+	srv.SetLogger(handler.GetLogger())
+	s.l = handler.GetLogger()
 	s.errorHandler = handler
 
 	return s

@@ -23,6 +23,10 @@ func (h *LogErrorHandler) Handle(ctx context.Context, err error) {
 	h.l.Error("Core", zap.Error(err))
 }
 
+func (h *LogErrorHandler) GetLogger() *zap.Logger {
+	return h.l
+}
+
 type ErrorHandlerFunc func(ctx context.Context, err error)
 
 func (f ErrorHandlerFunc) Handle(ctx context.Context, err error) {

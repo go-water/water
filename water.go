@@ -2,7 +2,6 @@ package water
 
 import (
 	"github.com/go-water/water/render"
-	"go.uber.org/zap"
 	"net/http"
 	"path"
 	"slices"
@@ -10,11 +9,6 @@ import (
 	"sync"
 	"time"
 )
-
-type Service interface {
-	Name(srv Service) string
-	SetLogger(l *zap.Logger)
-}
 
 type Router struct {
 	HTMLRender  render.HTMLRender
