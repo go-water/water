@@ -189,11 +189,13 @@ func bodyAllowedForStatus(status int) bool {
 
 // Status sets the HTTP response code.
 func (c *Context) Status(code int) {
-	c.Writer.WriteHeader(code)
+	if code > 0 && code != http.StatusOK {
+		c.Writer.WriteHeader(code)
+	}
 }
 
 func (c *Context) Render(code int, r render.Render) {
-	//c.Status(code)
+	c.Status(code)
 
 	if !bodyAllowedForStatus(code) {
 		r.WriteContentType(c.Writer)
