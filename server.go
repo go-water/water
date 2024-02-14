@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/go-water/water/circuitbreaker"
 	"github.com/go-water/water/endpoint"
-	"github.com/go-water/water/logger"
 	"github.com/go-water/water/ratelimit"
 	"github.com/sony/gobreaker"
 	"go.uber.org/zap"
@@ -36,7 +35,7 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 		s.e = circuitbreaker.GoBreaker(s.breaker)(s.e)
 	}
 
-	handler := NewLogErrorHandler(logger.Logger, srv.Name(srv))
+	handler := NewLogErrorHandler(Logger, srv.Name(srv))
 	srv.SetLogger(handler.GetLogger())
 	s.l = handler.GetLogger()
 	s.errorHandler = handler
