@@ -1,13 +1,14 @@
-package logger
+package water
 
 import (
+	"github.com/go-water/water/logger"
 	"go.uber.org/zap"
 )
 
 var Logger *zap.Logger
 
 func InitZap() {
-	Logger = NewLogger()
+	Logger = logger.NewLogger()
 }
 
 func Info(msg string, fields ...zap.Field) {
