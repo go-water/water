@@ -29,7 +29,7 @@ type Router struct {
 }
 
 type base struct {
-	global []func(http.Handler) http.Handler
+	global []HttpHandler
 	routes map[string]*Router
 }
 
@@ -41,7 +41,7 @@ func NewRouter() *Router {
 	ROUTER = &Router{
 		routes: make(map[string]HandlerFunc),
 		base: &base{
-			global: make([]func(http.Handler) http.Handler, 0),
+			global: make([]HttpHandler, 0),
 			routes: make(map[string]*Router),
 		},
 	}
