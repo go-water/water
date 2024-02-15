@@ -7,10 +7,12 @@ import (
 	"github.com/go-water/water/render"
 	"io"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -99,6 +101,10 @@ func (c *Context) Redirect(code int, location string) {
 	})
 }
 
+func (c *Context) SetSameSite(sameSite http.SameSite) {
+	c.sameSite = sameSite
+}
+
 func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
 	if c.Request.MultipartForm == nil {
 		if err := c.Request.ParseMultipartForm(MaxMultipartMemory); err != nil {
@@ -180,6 +186,14 @@ func (c *Context) HTML(code int, name string, obj any) {
 	c.Render(code, instance)
 }
 
+func (c *Context) RemoteIP() string {
+	ip, _, err := net.SplitHostPort(strings.TrimSpace(c.Request.RemoteAddr))
+	if err != nil {
+		return ""
+	}
+	return ip
+}
+
 func bodyAllowedForStatus(status int) bool {
 	switch {
 	case status >= 100 && status <= 199:
@@ -192,7 +206,6 @@ func bodyAllowedForStatus(status int) bool {
 	return true
 }
 
-// Status sets the HTTP response code.
 func (c *Context) Status(code int) {
 	if code > 0 && code != http.StatusOK {
 		c.Writer.WriteHeader(code)
