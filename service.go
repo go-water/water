@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Handler interface {
+type Accessor interface {
 	ServerWater(ctx context.Context, req any) (any, error)
 	GetLogger() *zap.Logger
 }

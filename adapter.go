@@ -12,7 +12,7 @@ import (
 	"reflect"
 )
 
-type Server struct {
+type adapter struct {
 	e            endpoint.Endpoint
 	finalizer    []ServerFinalizerFunc
 	errorHandler ErrorHandler
@@ -21,8 +21,8 @@ type Server struct {
 	breaker      *gobreaker.CircuitBreaker
 }
 
-func NewHandler(srv Service, options ...ServerOption) Handler {
-	s := new(Server)
+func NewAccessor(srv Service, options ...ServerOption) Accessor {
+	s := new(adapter)
 	for _, option := range options {
 		option(s)
 	}
@@ -43,9 +43,9 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 	return s
 }
 
-func (s *Server) endpoint(service Service) endpoint.Endpoint {
+func (ad *adapter) endpoint(service Service) endpoint.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
-		function, srv, ctxV, reqV, err := s.readRequest(ctx, service, req)
+		function, srv, ctxV, reqV, err := ad.readRequest(ctx, service, req)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +69,7 @@ func (s *Server) endpoint(service Service) endpoint.Endpoint {
 	}
 }
 
-func (s *Server) readRequest(ctx context.Context, service Service, req any) (function, srv, ctxV, reqV reflect.Value, err error) {
+func (ad *adapter) readRequest(ctx context.Context, service Service, req any) (function, srv, ctxV, reqV reflect.Value, err error) {
 	typ := reflect.TypeOf(service)
 	srv = reflect.ValueOf(service)
 
@@ -91,24 +91,24 @@ func (s *Server) readRequest(ctx context.Context, service Service, req any) (fun
 	return
 }
 
-func (s *Server) ServerWater(ctx context.Context, req any) (resp any, err error) {
-	if len(s.finalizer) > 0 {
+func (ad *adapter) ServerWater(ctx context.Context, req any) (resp any, err error) {
+	if len(ad.finalizer) > 0 {
 		defer func() {
-			for _, fn := range s.finalizer {
+			for _, fn := range ad.finalizer {
 				fn(ctx, err)
 			}
 		}()
 	}
 
-	resp, err = s.e(ctx, req)
+	resp, err = ad.e(ctx, req)
 	if err != nil {
-		s.errorHandler.Handle(ctx, err)
+		ad.errorHandler.Handle(ctx, err)
 		return nil, err
 	}
 
 	return resp, nil
 }
 
-func (s *Server) GetLogger() *zap.Logger {
-	return s.l
+func (ad *adapter) GetLogger() *zap.Logger {
+	return ad.l
 }
