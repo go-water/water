@@ -21,7 +21,7 @@ type adapter struct {
 	breaker      *gobreaker.CircuitBreaker
 }
 
-func NewAccessor(srv Service, options ...ServerOption) Accessor {
+func NewHandler(srv Service, options ...ServerOption) Handler {
 	s := new(adapter)
 	for _, option := range options {
 		option(s)
