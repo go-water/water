@@ -15,7 +15,7 @@ type LogErrorHandler struct {
 
 func NewLogErrorHandler(l *slog.Logger, n string) *LogErrorHandler {
 	return &LogErrorHandler{
-		l: l.WithGroup(n),
+		l: l.With(slog.String("name", n)),
 	}
 }
 
