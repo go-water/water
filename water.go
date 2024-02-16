@@ -10,30 +10,30 @@ import (
 	"time"
 )
 
-type Meili struct {
+type Water struct {
 	Router
 	ContextWithFallback bool
 	HTMLRender          render.HTMLRender
 	pool                sync.Pool
 }
 
-func (m *Meili) allocateContext() *Context {
-	return &Context{meili: m}
+func (w *Water) allocateContext() *Context {
+	return &Context{wt: w}
 }
 
-func (m *Meili) Serve(addr string, server ...*http.Server) error {
+func (w *Water) Serve(addr string, server ...*http.Server) error {
 	handler := &http.ServeMux{}
-	for _, rt := range m.base.routes {
+	for _, rt := range w.base.routes {
 		for url, handle := range rt.routes {
-			hdl := new(MeiliHandler)
-			hdl.m = m
-			hdl.h = handle
-			handler.Handle(url, hdl)
+			rhd := new(RouterHandler)
+			rhd.wt = w
+			rhd.h = handle
+			handler.Handle(url, rhd)
 		}
 	}
 
 	var h http.Handler = handler
-	for _, middleware := range m.base.global {
+	for _, middleware := range w.base.global {
 		h = middleware(h)
 	}
 
@@ -62,8 +62,8 @@ type base struct {
 	routes map[string]*Router
 }
 
-func New() *Meili {
-	meili := &Meili{
+func New() *Water {
+	meili := &Water{
 		Router: Router{
 			routes: make(map[string]HandlerFunc),
 			base: &base{
