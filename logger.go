@@ -7,7 +7,7 @@ import (
 
 var Logger *slog.Logger
 
-func InitLog() {
+func init() {
 	Logger = logger.NewLogger()
 }
 
