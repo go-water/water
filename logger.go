@@ -5,8 +5,12 @@ import (
 	"log/slog"
 )
 
-var Logger *slog.Logger
+var (
+	Logger    *slog.Logger
+	Level     = slog.LevelInfo
+	AddSource bool
+)
 
 func init() {
-	Logger = logger.NewLogger()
+	Logger = logger.NewLogger(Level, AddSource)
 }
