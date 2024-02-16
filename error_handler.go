@@ -20,7 +20,7 @@ func NewLogErrorHandler(l *slog.Logger, n string) *LogErrorHandler {
 }
 
 func (h *LogErrorHandler) Handle(ctx context.Context, err error) {
-	h.l.Error("Core", "err", err.Error())
+	h.l.Error(err.Error())
 }
 
 func (h *LogErrorHandler) GetLogger() *slog.Logger {
