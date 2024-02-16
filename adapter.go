@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/go-water/water/circuitbreaker"
 	"github.com/go-water/water/endpoint"
+	"github.com/go-water/water/logger"
 	"github.com/go-water/water/ratelimit"
 	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
@@ -34,7 +35,7 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 		a.e = circuitbreaker.GoBreaker(a.breaker)(a.e)
 	}
 
-	l := Logger.With(slog.String("name", srv.Name(srv)))
+	l := logger.NewLogger(logger.Level, logger.AddSource).With(slog.String("name", srv.Name(srv)))
 	srv.SetLogger(l)
 	a.l = l
 

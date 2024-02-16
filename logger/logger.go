@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+var (
+	Level     = slog.LevelInfo
+	AddSource bool
+)
+
 func NewLogger(level slog.Leveler, addSource bool) *slog.Logger {
 	return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: level, AddSource: addSource, ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 		v := a.Value
