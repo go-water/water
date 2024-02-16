@@ -2,23 +2,23 @@ package water
 
 import (
 	"github.com/go-water/water/logger"
-	"go.uber.org/zap"
+	"log/slog"
 )
 
-var Logger *zap.Logger
+var Logger *slog.Logger
 
-func InitZap() {
+func InitLog() {
 	Logger = logger.NewLogger()
 }
 
-func Info(msg string, fields ...zap.Field) {
-	Logger.Info(msg, fields...)
+func Info(msg string, args ...any) {
+	Logger.Info(msg, args...)
 }
 
-func Warn(msg string, fields ...zap.Field) {
-	Logger.Warn(msg, fields...)
+func Warn(msg string, args ...any) {
+	Logger.Warn(msg, args...)
 }
 
-func Error(msg string, fields ...zap.Field) {
-	Logger.Error(msg, fields...)
+func Error(msg string, args ...any) {
+	Logger.Error(msg, args...)
 }

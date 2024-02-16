@@ -3,22 +3,22 @@ package water
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
+	"log/slog"
 	"strings"
 )
 
 type Handler interface {
 	ServerWater(ctx context.Context, req any) (any, error)
-	GetLogger() *zap.Logger
+	GetLogger() *slog.Logger
 }
 
 type Service interface {
 	Name(srv Service) string
-	SetLogger(l *zap.Logger)
+	SetLogger(l *slog.Logger)
 }
 
 type ServerBase struct {
-	l *zap.Logger
+	l *slog.Logger
 }
 
 func (s *ServerBase) Name(srv Service) string {
@@ -28,10 +28,10 @@ func (s *ServerBase) Name(srv Service) string {
 	return name
 }
 
-func (s *ServerBase) GetLogger() *zap.Logger {
+func (s *ServerBase) GetLogger() *slog.Logger {
 	return s.l
 }
 
-func (s *ServerBase) SetLogger(l *zap.Logger) {
+func (s *ServerBase) SetLogger(l *slog.Logger) {
 	s.l = l
 }

@@ -7,8 +7,8 @@ import (
 	"github.com/go-water/water/endpoint"
 	"github.com/go-water/water/ratelimit"
 	"github.com/sony/gobreaker"
-	"go.uber.org/zap"
 	"golang.org/x/time/rate"
+	"log/slog"
 	"reflect"
 )
 
@@ -16,7 +16,7 @@ type adapter struct {
 	e            endpoint.Endpoint
 	finalizer    []ServerFinalizerFunc
 	errorHandler ErrorHandler
-	l            *zap.Logger
+	l            *slog.Logger
 	limit        *rate.Limiter
 	breaker      *gobreaker.CircuitBreaker
 }
@@ -109,6 +109,6 @@ func (ad *adapter) ServerWater(ctx context.Context, req any) (resp any, err erro
 	return resp, nil
 }
 
-func (ad *adapter) GetLogger() *zap.Logger {
+func (ad *adapter) GetLogger() *slog.Logger {
 	return ad.l
 }

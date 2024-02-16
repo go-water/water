@@ -2,7 +2,7 @@ package water
 
 import (
 	"context"
-	"go.uber.org/zap"
+	"log/slog"
 )
 
 type ErrorHandler interface {
@@ -10,20 +10,20 @@ type ErrorHandler interface {
 }
 
 type LogErrorHandler struct {
-	l *zap.Logger
+	l *slog.Logger
 }
 
-func NewLogErrorHandler(l *zap.Logger, n string) *LogErrorHandler {
+func NewLogErrorHandler(l *slog.Logger, n string) *LogErrorHandler {
 	return &LogErrorHandler{
-		l: l.Named(n),
+		l: l.WithGroup(n),
 	}
 }
 
 func (h *LogErrorHandler) Handle(ctx context.Context, err error) {
-	h.l.Error("Core", zap.Error(err))
+	h.l.Error("Core", "err", err.Error())
 }
 
-func (h *LogErrorHandler) GetLogger() *zap.Logger {
+func (h *LogErrorHandler) GetLogger() *slog.Logger {
 	return h.l
 }
 
