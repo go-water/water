@@ -9,10 +9,6 @@ import (
 
 type ServerOption func(*adapter)
 
-func ServerErrorHandler(errorHandler ErrorHandler) ServerOption {
-	return func(s *adapter) { s.errorHandler = errorHandler }
-}
-
 type ServerFinalizerFunc func(ctx context.Context, err error)
 
 func ServerFinalizer(f ...ServerFinalizerFunc) ServerOption {

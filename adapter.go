@@ -13,39 +13,37 @@ import (
 )
 
 type adapter struct {
-	e            endpoint.Endpoint
-	finalizer    []ServerFinalizerFunc
-	errorHandler ErrorHandler
-	l            *slog.Logger
-	limit        *rate.Limiter
-	breaker      *gobreaker.CircuitBreaker
+	e         endpoint.Endpoint
+	finalizer []ServerFinalizerFunc
+	l         *slog.Logger
+	limit     *rate.Limiter
+	breaker   *gobreaker.CircuitBreaker
 }
 
 func NewHandler(srv Service, options ...ServerOption) Handler {
-	s := new(adapter)
+	a := new(adapter)
 	for _, option := range options {
-		option(s)
+		option(a)
 	}
 
-	s.e = s.endpoint(srv)
-	if s.limit != nil {
-		s.e = ratelimit.NewErrorLimiter(s.limit)(s.e)
+	a.e = a.endpoint(srv)
+	if a.limit != nil {
+		a.e = ratelimit.NewErrorLimiter(a.limit)(a.e)
 	}
-	if s.breaker != nil {
-		s.e = circuitbreaker.GoBreaker(s.breaker)(s.e)
+	if a.breaker != nil {
+		a.e = circuitbreaker.GoBreaker(a.breaker)(a.e)
 	}
 
-	handler := NewLogErrorHandler(Logger, srv.Name(srv))
-	srv.SetLogger(handler.GetLogger())
-	s.l = handler.GetLogger()
-	s.errorHandler = handler
+	l := Logger.With(slog.String("name", srv.Name(srv)))
+	srv.SetLogger(l)
+	a.l = l
 
-	return s
+	return a
 }
 
-func (ad *adapter) endpoint(service Service) endpoint.Endpoint {
+func (a *adapter) endpoint(service Service) endpoint.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
-		function, srv, ctxV, reqV, err := ad.readRequest(ctx, service, req)
+		function, srv, ctxV, reqV, err := a.readRequest(ctx, service, req)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +67,7 @@ func (ad *adapter) endpoint(service Service) endpoint.Endpoint {
 	}
 }
 
-func (ad *adapter) readRequest(ctx context.Context, service Service, req any) (function, srv, ctxV, reqV reflect.Value, err error) {
+func (a *adapter) readRequest(ctx context.Context, service Service, req any) (function, srv, ctxV, reqV reflect.Value, err error) {
 	typ := reflect.TypeOf(service)
 	srv = reflect.ValueOf(service)
 
@@ -91,24 +89,24 @@ func (ad *adapter) readRequest(ctx context.Context, service Service, req any) (f
 	return
 }
 
-func (ad *adapter) ServerWater(ctx context.Context, req any) (resp any, err error) {
-	if len(ad.finalizer) > 0 {
+func (a *adapter) ServerWater(ctx context.Context, req any) (resp any, err error) {
+	if len(a.finalizer) > 0 {
 		defer func() {
-			for _, fn := range ad.finalizer {
+			for _, fn := range a.finalizer {
 				fn(ctx, err)
 			}
 		}()
 	}
 
-	resp, err = ad.e(ctx, req)
+	resp, err = a.e(ctx, req)
 	if err != nil {
-		ad.errorHandler.Handle(ctx, err)
+		a.l.Error(err.Error())
 		return nil, err
 	}
 
 	return resp, nil
 }
 
-func (ad *adapter) GetLogger() *slog.Logger {
-	return ad.l
+func (a *adapter) GetLogger() *slog.Logger {
+	return a.l
 }
