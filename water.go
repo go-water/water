@@ -106,6 +106,22 @@ func (r *Router) HEAD(route string, handler HandlerFunc) {
 	r.Method(http.MethodHead, route, handler)
 }
 
+func (r *Router) Put(route string, handler HandlerFunc) {
+	r.Method(http.MethodPut, route, handler)
+}
+
+func (r *Router) Patch(route string, handler HandlerFunc) {
+	r.Method(http.MethodPatch, route, handler)
+}
+
+func (r *Router) Delete(route string, handler HandlerFunc) {
+	r.Method(http.MethodDelete, route, handler)
+}
+
+func (r *Router) OPTIONS(route string, handlers HandlerFunc) {
+	r.Method(http.MethodOptions, route, handlers)
+}
+
 func (r *Router) Method(method, route string, handler HandlerFunc) {
 	if strings.HasSuffix(route, "/") {
 		route += "{$}"
