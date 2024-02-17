@@ -13,7 +13,7 @@ import (
 	"reflect"
 )
 
-type adapter struct {
+type handler struct {
 	e         endpoint.Endpoint
 	finalizer []ServerFinalizerFunc
 	l         *slog.Logger
@@ -22,29 +22,29 @@ type adapter struct {
 }
 
 func NewHandler(srv Service, options ...ServerOption) Handler {
-	a := new(adapter)
+	h := new(handler)
 	for _, option := range options {
-		option(a)
+		option(h)
 	}
 
-	a.e = a.endpoint(srv)
-	if a.limit != nil {
-		a.e = ratelimit.NewErrorLimiter(a.limit)(a.e)
+	h.e = h.endpoint(srv)
+	if h.limit != nil {
+		h.e = ratelimit.NewErrorLimiter(h.limit)(h.e)
 	}
-	if a.breaker != nil {
-		a.e = circuitbreaker.GoBreaker(a.breaker)(a.e)
+	if h.breaker != nil {
+		h.e = circuitbreaker.GoBreaker(h.breaker)(h.e)
 	}
 
 	l := logger.NewLogger(logger.Level, logger.AddSource).With(slog.String("name", srv.Name(srv)))
 	srv.SetLogger(l)
-	a.l = l
+	h.l = l
 
-	return a
+	return h
 }
 
-func (a *adapter) endpoint(service Service) endpoint.Endpoint {
+func (h *handler) endpoint(service Service) endpoint.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
-		function, srv, ctxV, reqV, err := a.readRequest(ctx, service, req)
+		function, srv, ctxV, reqV, err := h.readRequest(ctx, service, req)
 		if err != nil {
 			return nil, err
 		}
@@ -68,7 +68,7 @@ func (a *adapter) endpoint(service Service) endpoint.Endpoint {
 	}
 }
 
-func (a *adapter) readRequest(ctx context.Context, service Service, req any) (function, srv, ctxV, reqV reflect.Value, err error) {
+func (h *handler) readRequest(ctx context.Context, service Service, req any) (function, srv, ctxV, reqV reflect.Value, err error) {
 	typ := reflect.TypeOf(service)
 	srv = reflect.ValueOf(service)
 
@@ -90,24 +90,24 @@ func (a *adapter) readRequest(ctx context.Context, service Service, req any) (fu
 	return
 }
 
-func (a *adapter) ServerWater(ctx context.Context, req any) (resp any, err error) {
-	if len(a.finalizer) > 0 {
+func (h *handler) ServerWater(ctx context.Context, req any) (resp any, err error) {
+	if len(h.finalizer) > 0 {
 		defer func() {
-			for _, fn := range a.finalizer {
+			for _, fn := range h.finalizer {
 				fn(ctx, err)
 			}
 		}()
 	}
 
-	resp, err = a.e(ctx, req)
+	resp, err = h.e(ctx, req)
 	if err != nil {
-		a.l.Error(err.Error())
+		h.l.Error(err.Error())
 		return nil, err
 	}
 
 	return resp, nil
 }
 
-func (a *adapter) GetLogger() *slog.Logger {
-	return a.l
+func (h *handler) GetLogger() *slog.Logger {
+	return h.l
 }
