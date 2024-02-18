@@ -46,17 +46,17 @@ func (w *Water) validateHeader(header string) (clientIP string, valid bool) {
 }
 
 func (w *Water) Serve(addr string, server ...*http.Server) error {
-	handler := &http.ServeMux{}
+	mux := &http.ServeMux{}
 	for _, rt := range w.base.routes {
 		for url, handle := range rt.routes {
 			rhd := new(RouterHandler)
 			rhd.wt = w
 			rhd.h = handle
-			handler.Handle(url, rhd)
+			mux.Handle(url, rhd)
 		}
 	}
 
-	var h http.Handler = handler
+	var h http.Handler = mux
 	for _, middleware := range w.base.global {
 		h = middleware(h)
 	}
