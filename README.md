@@ -46,7 +46,7 @@ func main() {
 }
 
 func Index(ctx *water.Context) {
-	ctx.HTML(http.StatusOK, "index", water.H{"body": "你好，朋友。"})
+	ctx.HTML(http.StatusOK, "index", water.H{"title": "我是标题", "body": "你好，朋友。"})
 }
 
 func GetHello(ctx *water.Context) {
