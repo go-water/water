@@ -43,6 +43,11 @@ func (c *Context) Param(key string) string {
 	return c.Request.PathValue(key)
 }
 
+func (c *Context) ShouldBind(obj any) error {
+	b := binding.Default(c.Request.Method, c.GetHeader("Content-Type"))
+	return c.ShouldBindWith(obj, b)
+}
+
 func (c *Context) ShouldBindJSON(obj any) error {
 	return c.ShouldBindWith(obj, binding.JSON)
 }
@@ -265,7 +270,7 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 	}()
 
 	t = new(T)
-	if err = c.ShouldBindJSON(t); err != nil {
+	if err = c.ShouldBind(t); err != nil {
 		return nil, err
 	}
 
