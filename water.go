@@ -179,11 +179,11 @@ func (r *Router) StaticFS(relativePath string, fs http.FileSystem) *Router {
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL parameters can not be used when serving a static folder")
 	}
-	handler := r.createStaticHandler(relativePath, fs)
+	hdl := r.createStaticHandler(relativePath, fs)
 	urlPattern := path.Join(relativePath, "{path...}")
 
-	r.GET(urlPattern, handler)
-	r.HEAD(urlPattern, handler)
+	r.GET(urlPattern, hdl)
+	r.HEAD(urlPattern, hdl)
 	return r
 }
 
