@@ -2,6 +2,7 @@ package water
 
 import (
 	"github.com/go-water/water/render"
+	"net"
 	"net/http"
 	"path"
 	"slices"
@@ -15,10 +16,33 @@ type Water struct {
 	ContextWithFallback bool
 	HTMLRender          render.HTMLRender
 	pool                sync.Pool
+	TrustedPlatform     string
+	RemoteIPHeaders     []string
 }
 
 func (w *Water) allocateContext() *Context {
 	return &Context{wt: w}
+}
+
+func (w *Water) validateHeader(header string) (clientIP string, valid bool) {
+	if header == "" {
+		return "", false
+	}
+
+	items := strings.Split(header, ",")
+	for i := len(items) - 1; i >= 0; i-- {
+		ipStr := strings.TrimSpace(items[i])
+		ip := net.ParseIP(ipStr)
+		if ip == nil {
+			break
+		}
+
+		if i == 0 {
+			return ipStr, true
+		}
+	}
+
+	return "", false
 }
 
 func (w *Water) Serve(addr string, server ...*http.Server) error {
@@ -71,6 +95,7 @@ func New() *Water {
 				routes: make(map[string]*Router),
 			},
 		},
+		RemoteIPHeaders: []string{"X-Forwarded-For", "X-Real-IP"},
 	}
 
 	meili.base.routes[""] = &meili.Router

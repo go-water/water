@@ -186,6 +186,29 @@ func (c *Context) HTML(code int, name string, obj any) {
 	c.Render(code, instance)
 }
 
+func (c *Context) ClientIP() string {
+	if c.wt.TrustedPlatform != "" {
+		if addr := c.GetHeader(c.wt.TrustedPlatform); addr != "" {
+			return addr
+		}
+	}
+
+	remoteIP := net.ParseIP(c.RemoteIP())
+	if remoteIP == nil {
+		return ""
+	}
+
+	if c.wt.RemoteIPHeaders != nil {
+		for _, headerName := range c.wt.RemoteIPHeaders {
+			ip, valid := c.wt.validateHeader(c.GetHeader(headerName))
+			if valid {
+				return ip
+			}
+		}
+	}
+	return remoteIP.String()
+}
+
 func (c *Context) RemoteIP() string {
 	ip, _, err := net.SplitHostPort(strings.TrimSpace(c.Request.RemoteAddr))
 	if err != nil {
