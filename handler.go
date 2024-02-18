@@ -99,7 +99,7 @@ func (h *handler) readRequest(ctx context.Context, service Service, req any) (fu
 			reqV = reflect.ValueOf(req)
 			function = method.Func
 		} else {
-			err = errors.New("method Handle does not include two parameters")
+			err = errors.New("method Handle does not include three parameters")
 		}
 	} else {
 		err = errors.New("method Handle not implemented")
