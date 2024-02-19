@@ -44,7 +44,7 @@ func (c *Context) Param(key string) string {
 }
 
 func (c *Context) ShouldBind(obj any) error {
-	b := binding.Default(c.Request.Method, c.GetHeader("Content-Type"))
+	b := binding.Default(c.Request.Method, c.ContentType())
 	return c.ShouldBindWith(obj, b)
 }
 
@@ -108,6 +108,17 @@ func (c *Context) Redirect(code int, location string) {
 
 func (c *Context) SetSameSite(sameSite http.SameSite) {
 	c.sameSite = sameSite
+}
+
+func (c *Context) ContentType() string {
+	content := c.GetHeader("Content-Type")
+	for i, char := range content {
+		if char == ' ' || char == ';' {
+			return content[:i]
+		}
+	}
+
+	return content
 }
 
 func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
