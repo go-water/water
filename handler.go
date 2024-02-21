@@ -29,6 +29,7 @@ func (r *RouterHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx.reset()
 
 	r.h(ctx)
+	r.wt.pool.Put(ctx)
 }
 
 type handler struct {
