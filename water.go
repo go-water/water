@@ -192,22 +192,6 @@ func (r *Router) createStaticHandler(relativePath string, fs http.FileSystem) Ha
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
 
 	return func(c *Context) {
-		//if _, noListing := fs.(*onlyFilesFS); noListing {
-		//	c.Writer.WriteHeader(http.StatusNotFound)
-		//}
-
-		file := c.Param("path")
-		// Check if file exists and/or if we have permission to access it
-		f, err := fs.Open(file)
-		if err != nil {
-			c.Writer.WriteHeader(http.StatusNotFound)
-			//c.handlers = r.engine.noRoute
-			// Reset index
-			//c.index = -1
-			return
-		}
-		f.Close()
-
 		fileServer.ServeHTTP(c.Writer, c.Request)
 	}
 }
