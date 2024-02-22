@@ -1,3 +1,3 @@
 package water
 
-const Version = "v0.8.5"
+const Version = "v0.8.6"
