@@ -24,29 +24,25 @@ type Water struct {
 	MaxMultipartMemory int64
 }
 
-func (w *Water) allocateContext() *Context {
-	return &Context{wt: w}
-}
-
-func (w *Water) validateHeader(header string) (clientIP string, valid bool) {
-	if header == "" {
-		return "", false
+func New() *Water {
+	w := &Water{
+		Router: Router{
+			routes: make(map[string]HandlerFunc),
+			base: &base{
+				global: make([]HttpHandler, 0),
+				routes: make(map[string]*Router),
+			},
+		},
+		RemoteIPHeaders:    []string{"X-Forwarded-For", "X-Real-IP"},
+		MaxMultipartMemory: defaultMultipartMemory,
 	}
 
-	items := strings.Split(header, ",")
-	for i := len(items) - 1; i >= 0; i-- {
-		ipStr := strings.TrimSpace(items[i])
-		ip := net.ParseIP(ipStr)
-		if ip == nil {
-			break
-		}
-
-		if i == 0 {
-			return ipStr, true
-		}
+	w.base.routes[""] = &w.Router
+	w.pool.New = func() any {
+		return w.allocateContext()
 	}
 
-	return "", false
+	return w
 }
 
 func (w *Water) Serve(addr string, server ...*http.Server) error {
@@ -76,6 +72,31 @@ func (w *Water) Serve(addr string, server ...*http.Server) error {
 	return srv.ListenAndServe()
 }
 
+func (w *Water) allocateContext() *Context {
+	return &Context{wt: w}
+}
+
+func (w *Water) validateHeader(header string) (clientIP string, valid bool) {
+	if header == "" {
+		return "", false
+	}
+
+	items := strings.Split(header, ",")
+	for i := len(items) - 1; i >= 0; i-- {
+		ipStr := strings.TrimSpace(items[i])
+		ip := net.ParseIP(ipStr)
+		if ip == nil {
+			break
+		}
+
+		if i == 0 {
+			return ipStr, true
+		}
+	}
+
+	return "", false
+}
+
 type Router struct {
 	scope       string
 	routes      map[string]HandlerFunc
@@ -88,27 +109,6 @@ type Router struct {
 type base struct {
 	global []HttpHandler
 	routes map[string]*Router
-}
-
-func New() *Water {
-	meili := &Water{
-		Router: Router{
-			routes: make(map[string]HandlerFunc),
-			base: &base{
-				global: make([]HttpHandler, 0),
-				routes: make(map[string]*Router),
-			},
-		},
-		RemoteIPHeaders:    []string{"X-Forwarded-For", "X-Real-IP"},
-		MaxMultipartMemory: defaultMultipartMemory,
-	}
-
-	meili.base.routes[""] = &meili.Router
-	meili.pool.New = func() any {
-		return meili.allocateContext()
-	}
-
-	return meili
 }
 
 func (r *Router) Group(prefix string) *Router {
