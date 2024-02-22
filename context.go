@@ -2,6 +2,7 @@ package water
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-water/water/binding"
 	"github.com/go-water/water/render"
@@ -32,15 +33,105 @@ type Context struct {
 
 	sameSite http.SameSite
 	wt       *Water
+
+	queryCache url.Values
+	formCache  url.Values
 }
 
 func (c *Context) reset() {
 	c.sameSite = 0
 	c.Keys = nil
+	c.queryCache = nil
+	c.formCache = nil
 }
 
 func (c *Context) Param(key string) string {
 	return c.Request.PathValue(key)
+}
+
+func (c *Context) Query(key string) (value string) {
+	value, _ = c.GetQuery(key)
+	return
+}
+
+func (c *Context) GetQuery(key string) (string, bool) {
+	if values, ok := c.GetQueryArray(key); ok {
+		return values[0], ok
+	}
+	return "", false
+}
+
+func (c *Context) DefaultQuery(key, defaultValue string) string {
+	if value, ok := c.GetQuery(key); ok {
+		return value
+	}
+
+	return defaultValue
+}
+
+func (c *Context) QueryArray(key string) (values []string) {
+	values, _ = c.GetQueryArray(key)
+	return
+}
+
+func (c *Context) GetQueryArray(key string) (values []string, ok bool) {
+	c.initQueryCache()
+	values, ok = c.queryCache[key]
+	return
+}
+
+func (c *Context) initQueryCache() {
+	if c.queryCache == nil {
+		if c.Request != nil {
+			c.queryCache = c.Request.URL.Query()
+		} else {
+			c.queryCache = url.Values{}
+		}
+	}
+}
+
+func (c *Context) PostForm(key string) (value string) {
+	value, _ = c.GetPostForm(key)
+	return
+}
+
+func (c *Context) GetPostForm(key string) (string, bool) {
+	if values, ok := c.GetPostFormArray(key); ok {
+		return values[0], ok
+	}
+
+	return "", false
+}
+
+func (c *Context) DefaultPostForm(key, defaultValue string) string {
+	if value, ok := c.GetPostForm(key); ok {
+		return value
+	}
+	return defaultValue
+}
+
+func (c *Context) PostFormArray(key string) (values []string) {
+	values, _ = c.GetPostFormArray(key)
+	return
+}
+
+func (c *Context) GetPostFormArray(key string) (values []string, ok bool) {
+	c.initFormCache()
+	values, ok = c.formCache[key]
+	return
+}
+
+func (c *Context) initFormCache() {
+	if c.formCache == nil {
+		c.formCache = make(url.Values)
+		req := c.Request
+		if err := req.ParseMultipartForm(c.wt.MaxMultipartMemory); err != nil {
+			if !errors.Is(err, http.ErrNotMultipart) {
+				fmt.Printf("error on parse multipart form array: %v", err)
+			}
+		}
+		c.formCache = req.PostForm
+	}
 }
 
 func (c *Context) ShouldBind(obj any) error {

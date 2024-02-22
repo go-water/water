@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const defaultMultipartMemory = 32 << 20 // 32 MB
+
 type Water struct {
 	Router
 	ContextWithFallback bool
@@ -18,6 +20,8 @@ type Water struct {
 	pool                sync.Pool
 	TrustedPlatform     string
 	RemoteIPHeaders     []string
+
+	MaxMultipartMemory int64
 }
 
 func (w *Water) allocateContext() *Context {
@@ -95,7 +99,8 @@ func New() *Water {
 				routes: make(map[string]*Router),
 			},
 		},
-		RemoteIPHeaders: []string{"X-Forwarded-For", "X-Real-IP"},
+		RemoteIPHeaders:    []string{"X-Forwarded-For", "X-Real-IP"},
+		MaxMultipartMemory: defaultMultipartMemory,
 	}
 
 	meili.base.routes[""] = &meili.Router
