@@ -189,6 +189,90 @@ func (c *Context) GetString(key string) (s string) {
 	return
 }
 
+func (c *Context) GetBool(key string) (b bool) {
+	if val, ok := c.Get(key); ok && val != nil {
+		b, _ = val.(bool)
+	}
+	return
+}
+
+func (c *Context) GetInt(key string) (i int) {
+	if val, ok := c.Get(key); ok && val != nil {
+		i, _ = val.(int)
+	}
+	return
+}
+
+func (c *Context) GetInt64(key string) (i64 int64) {
+	if val, ok := c.Get(key); ok && val != nil {
+		i64, _ = val.(int64)
+	}
+	return
+}
+
+func (c *Context) GetUint(key string) (ui uint) {
+	if val, ok := c.Get(key); ok && val != nil {
+		ui, _ = val.(uint)
+	}
+	return
+}
+
+func (c *Context) GetUint64(key string) (ui64 uint64) {
+	if val, ok := c.Get(key); ok && val != nil {
+		ui64, _ = val.(uint64)
+	}
+	return
+}
+
+func (c *Context) GetFloat64(key string) (f64 float64) {
+	if val, ok := c.Get(key); ok && val != nil {
+		f64, _ = val.(float64)
+	}
+	return
+}
+
+func (c *Context) GetTime(key string) (t time.Time) {
+	if val, ok := c.Get(key); ok && val != nil {
+		t, _ = val.(time.Time)
+	}
+	return
+}
+
+func (c *Context) GetDuration(key string) (d time.Duration) {
+	if val, ok := c.Get(key); ok && val != nil {
+		d, _ = val.(time.Duration)
+	}
+	return
+}
+
+func (c *Context) GetStringSlice(key string) (ss []string) {
+	if val, ok := c.Get(key); ok && val != nil {
+		ss, _ = val.([]string)
+	}
+	return
+}
+
+func (c *Context) GetStringMap(key string) (sm map[string]any) {
+	if val, ok := c.Get(key); ok && val != nil {
+		sm, _ = val.(map[string]any)
+	}
+	return
+}
+
+func (c *Context) GetStringMapString(key string) (sms map[string]string) {
+	if val, ok := c.Get(key); ok && val != nil {
+		sms, _ = val.(map[string]string)
+	}
+	return
+}
+
+func (c *Context) GetStringMapStringSlice(key string) (smss map[string][]string) {
+	if val, ok := c.Get(key); ok && val != nil {
+		smss, _ = val.(map[string][]string)
+	}
+	return
+}
+
 func (c *Context) Redirect(code int, location string) {
 	c.Render(-1, render.Redirect{
 		Code:     code,
@@ -347,14 +431,10 @@ func (c *Context) Render(code int, r render.Render) {
 
 	if !bodyAllowedForStatus(code) {
 		r.WriteContentType(c.Writer)
-		//c.Writer.WriteHeaderNow()
 		return
 	}
 
 	if err := r.Render(c.Writer); err != nil {
-		// Pushing error to c.Errors
-		//_ = c.Error(err)
-		//c.Abort()
 		return
 	}
 }
@@ -379,18 +459,12 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 	return t, nil
 }
 
-/************************************/
-/***** GOLANG.ORG/X/NET/CONTEXT *****/
-/************************************/
-
-// hasRequestContext returns whether c.Request has Context and fallback.
 func (c *Context) hasRequestContext() bool {
 	hasFallback := c.wt != nil && c.wt.ContextWithFallback
 	hasRequestContext := c.Request != nil && c.Request.Context() != nil
 	return hasFallback && hasRequestContext
 }
 
-// Deadline returns that there is no deadline (ok==false) when c.Request has no Context.
 func (c *Context) Deadline() (deadline time.Time, ok bool) {
 	if !c.hasRequestContext() {
 		return
@@ -398,7 +472,6 @@ func (c *Context) Deadline() (deadline time.Time, ok bool) {
 	return c.Request.Context().Deadline()
 }
 
-// Done returns nil (chan which will wait forever) when c.Request has no Context.
 func (c *Context) Done() <-chan struct{} {
 	if !c.hasRequestContext() {
 		return nil
@@ -406,7 +479,6 @@ func (c *Context) Done() <-chan struct{} {
 	return c.Request.Context().Done()
 }
 
-// Err returns nil when c.Request has no Context.
 func (c *Context) Err() error {
 	if !c.hasRequestContext() {
 		return nil
@@ -414,9 +486,6 @@ func (c *Context) Err() error {
 	return c.Request.Context().Err()
 }
 
-// Value returns the value associated with this context for key, or nil
-// if no value is associated with key. Successive calls to Value with
-// the same key returns the same result.
 func (c *Context) Value(key any) any {
 	if key == 0 {
 		return c.Request
