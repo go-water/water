@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-water/water/internal/bytesconv"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
-	"unsafe"
 )
 
 var (
@@ -223,9 +223,9 @@ func setWithProperType(val string, value reflect.Value, field reflect.StructFiel
 		case time.Time:
 			return setTimeField(val, field, value)
 		}
-		return json.Unmarshal(StringToBytes(val), value.Addr().Interface())
+		return json.Unmarshal(bytesconv.StringToBytes(val), value.Addr().Interface())
 	case reflect.Map:
-		return json.Unmarshal(StringToBytes(val), value.Addr().Interface())
+		return json.Unmarshal(bytesconv.StringToBytes(val), value.Addr().Interface())
 	default:
 		return errUnknownType
 	}
@@ -387,16 +387,4 @@ func setFormMap(ptr any, form map[string][]string) error {
 	}
 
 	return nil
-}
-
-// StringToBytes converts string to byte slice without a memory allocation.
-// For more details, see https://github.com/golang/go/issues/53003#issuecomment-1140276077.
-func StringToBytes(s string) []byte {
-	return unsafe.Slice(unsafe.StringData(s), len(s))
-}
-
-// BytesToString converts byte slice to string without a memory allocation.
-// For more details, see https://github.com/golang/go/issues/53003#issuecomment-1140276077.
-func BytesToString(b []byte) string {
-	return unsafe.String(unsafe.SliceData(b), len(b))
 }
