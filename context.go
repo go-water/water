@@ -143,8 +143,31 @@ func (c *Context) ShouldBindJSON(obj any) error {
 	return c.ShouldBindWith(obj, binding.JSON)
 }
 
+func (c *Context) ShouldBindQuery(obj any) error {
+	return c.ShouldBindWith(obj, binding.Query)
+}
+
 func (c *Context) ShouldBindWith(obj any, b binding.Binding) error {
 	return b.Bind(c.Request, obj)
+}
+
+func (c *Context) BindJSON(obj any) error {
+	return c.MustBindWith(obj, binding.JSON)
+}
+
+func (c *Context) BindQuery(obj any) error {
+	return c.MustBindWith(obj, binding.Query)
+}
+
+func (c *Context) BindHeader(obj any) error {
+	return c.MustBindWith(obj, binding.Header)
+}
+
+func (c *Context) MustBindWith(obj any, b binding.Binding) error {
+	if err := c.ShouldBindWith(obj, b); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *Context) JSON(status int, data any) error {

@@ -22,7 +22,9 @@ var Validator StructValidator = &defaultValidator{}
 var (
 	JSON          = jsonBinding{}
 	Form          = formBinding{}
+	Query         = queryBinding{}
 	FormMultipart = formMultipartBinding{}
+	Header        = headerBinding{}
 )
 
 func Default(method, contentType string) Binding {
