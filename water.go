@@ -46,7 +46,7 @@ func New() *Water {
 	return w
 }
 
-func (w *Water) Serve(addr string, server ...*http.Server) error {
+func (w *Water) Run(addr string, server ...*http.Server) error {
 	mux := &http.ServeMux{}
 	for _, rt := range w.base.routes {
 		for url, handle := range rt.routes {
