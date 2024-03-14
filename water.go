@@ -1,6 +1,7 @@
 package water
 
 import (
+	"fmt"
 	"github.com/go-water/water/render"
 	"net"
 	"net/http"
@@ -68,7 +69,7 @@ func (w *Water) Serve(addr string, server ...*http.Server) error {
 		srv = server[0]
 	}
 	srv.Addr, srv.Handler = addr, h
-
+	w.print(addr)
 	return srv.ListenAndServe()
 }
 
@@ -95,6 +96,18 @@ func (w *Water) validateHeader(header string) (clientIP string, valid bool) {
 	}
 
 	return "", false
+}
+
+func (w *Water) print(addr string) {
+	banner := `
+ __    __   _______  __       __        ______   
+|  |  |  | |   ____||  |     |  |      /  __  \  
+|  |__|  | |  |__   |  |     |  |     |  |  |  | 
+|   __   | |   __|  |  |     |  |     |  |  |  | 
+|  |  |  | |  |____ |  ` + "`" + `----.|  ` + "`" + `----.|  ` + "`" + `----.|  ` + "`" + `--. 
+|__|  |__| |_______||_______||_______| \______/`
+	fmt.Println(banner)
+	fmt.Println(fmt.Sprintf("Listening and serving HTTP on %s", addr))
 }
 
 type Router struct {
