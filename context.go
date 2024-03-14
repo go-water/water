@@ -400,6 +400,10 @@ func (c *Context) HTML(code int, name string, obj any) {
 	c.Render(code, instance)
 }
 
+func (c *Context) Text(code int, format string, values ...any) {
+	c.Render(code, render.Text{Format: format, Data: values})
+}
+
 func (c *Context) ClientIP() string {
 	if c.wt.TrustedPlatform != "" {
 		if addr := c.GetHeader(c.wt.TrustedPlatform); addr != "" {
