@@ -6,11 +6,11 @@ import (
 	"github.com/go-water/water/endpoint"
 )
 
-type Allowing interface {
+type Allower interface {
 	Allow() bool
 }
 
-func NewErrorLimiter(limit Allowing) endpoint.Middleware {
+func NewErrorLimiter(limit Allower) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request any) (any, error) {
 			if !limit.Allow() {
@@ -21,11 +21,11 @@ func NewErrorLimiter(limit Allowing) endpoint.Middleware {
 	}
 }
 
-type Waiting interface {
+type Waiter interface {
 	Wait(ctx context.Context) error
 }
 
-func NewDelayingLimiter(limit Waiting) endpoint.Middleware {
+func NewDelayingLimiter(limit Waiter) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request any) (any, error) {
 			if err := limit.Wait(ctx); err != nil {
@@ -34,16 +34,4 @@ func NewDelayingLimiter(limit Waiting) endpoint.Middleware {
 			return next(ctx, request)
 		}
 	}
-}
-
-type AllowingFunc func() bool
-
-func (f AllowingFunc) Allow() bool {
-	return f()
-}
-
-type WaitingFunc func(ctx context.Context) error
-
-func (f WaitingFunc) Wait(ctx context.Context) error {
-	return f(ctx)
 }
