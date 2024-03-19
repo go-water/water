@@ -21,6 +21,12 @@ func ServerLimiter(interval time.Duration, b int) ServerOption {
 	}
 }
 
+func ServerDelayLimiter(interval time.Duration, b int) ServerOption {
+	return func(h *handler) {
+		h.delay = rate.NewLimiter(rate.Every(interval), b)
+	}
+}
+
 func ServerBreaker(breaker *gobreaker.CircuitBreaker) ServerOption {
 	return func(h *handler) {
 		h.breaker = breaker

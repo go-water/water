@@ -16,6 +16,7 @@ func NewErrorLimiter(limit Allower) endpoint.Middleware {
 			if !limit.Allow() {
 				return nil, consterr.ErrLimited
 			}
+
 			return next(ctx, request)
 		}
 	}
@@ -31,6 +32,7 @@ func NewDelayingLimiter(limit Waiter) endpoint.Middleware {
 			if err := limit.Wait(ctx); err != nil {
 				return nil, err
 			}
+
 			return next(ctx, request)
 		}
 	}
