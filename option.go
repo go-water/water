@@ -15,15 +15,15 @@ func ServerFinalizer(f ...ServerFinalizerFunc) ServerOption {
 	return func(h *handler) { h.finalizer = append(h.finalizer, f...) }
 }
 
-func ServerLimiter(interval time.Duration, b int) ServerOption {
+func ServerErrorLimiter(interval time.Duration, b int) ServerOption {
 	return func(h *handler) {
-		h.limit = rate.NewLimiter(rate.Every(interval), b)
+		h.el = rate.NewLimiter(rate.Every(interval), b)
 	}
 }
 
 func ServerDelayLimiter(interval time.Duration, b int) ServerOption {
 	return func(h *handler) {
-		h.delay = rate.NewLimiter(rate.Every(interval), b)
+		h.dl = rate.NewLimiter(rate.Every(interval), b)
 	}
 }
 

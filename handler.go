@@ -36,8 +36,8 @@ type handler struct {
 	e         endpoint.Endpoint
 	finalizer []ServerFinalizerFunc
 	l         *slog.Logger
-	delay     *rate.Limiter
-	limit     *rate.Limiter
+	dl        *rate.Limiter
+	el        *rate.Limiter
 	breaker   *gobreaker.CircuitBreaker
 }
 
@@ -48,11 +48,11 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 	}
 
 	h.e = h.endpoint(srv)
-	if h.delay != nil {
-		h.e = ratelimit.NewDelayingLimiter(h.delay)(h.e)
+	if h.dl != nil {
+		h.e = ratelimit.NewDelayingLimiter(h.dl)(h.e)
 	}
-	if h.limit != nil {
-		h.e = ratelimit.NewErrorLimiter(h.limit)(h.e)
+	if h.el != nil {
+		h.e = ratelimit.NewErrorLimiter(h.el)(h.e)
 	}
 	if h.breaker != nil {
 		h.e = circuitbreaker.GoBreaker(h.breaker)(h.e)
