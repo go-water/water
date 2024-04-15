@@ -34,8 +34,7 @@ func mapFormByTag(ptr any, form map[string][]string, tag string) error {
 		ptrVal = ptrVal.Elem()
 		pointed = ptrVal.Interface()
 	}
-	if ptrVal.Kind() == reflect.Map &&
-		ptrVal.Type().Key().Kind() == reflect.String {
+	if ptrVal.Kind() == reflect.Map && ptrVal.Type().Key().Kind() == reflect.String {
 		if pointed != nil {
 			ptr = pointed
 		}
