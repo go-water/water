@@ -2,7 +2,6 @@ package render
 
 import (
 	"fmt"
-	"github.com/go-water/water/internal/bytesconv"
 	"net/http"
 )
 
@@ -27,6 +26,6 @@ func WriteString(w http.ResponseWriter, format string, data []any) (err error) {
 		_, err = fmt.Fprintf(w, format, data...)
 		return
 	}
-	_, err = w.Write(bytesconv.StringToBytes(format))
+	_, err = w.Write([]byte(format))
 	return
 }
