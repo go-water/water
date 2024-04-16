@@ -13,12 +13,15 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
 )
 
-const ContextKey = "_go-water/context-key"
+const (
+	ContextKey = "_go-water/context-key"
+)
 
 var MaxMultipartMemory int64 = 32 << 20 // 32 MB
 
@@ -478,9 +481,23 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 		}
 	}()
 
-	t = new(T)
-	if err = c.ShouldBind(t); err != nil {
+	var obj any
+	kind := reflect.TypeOf(t).Elem().Kind()
+	if kind == reflect.Map {
+		obj = reflect.MakeMap(reflect.TypeOf(t).Elem()).Interface()
+	} else {
+		obj = new(T)
+	}
+
+	if err = c.ShouldBind(obj); err != nil {
 		return nil, err
+	}
+
+	if kind == reflect.Map {
+		o := obj.(T)
+		t = &o
+	} else {
+		return obj.(*T), nil
 	}
 
 	return t, nil

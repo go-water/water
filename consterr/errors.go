@@ -5,6 +5,5 @@ import (
 )
 
 var (
-	ErrInvalidKey = errors.New("key is invalid")
-	ErrLimited    = errors.New("rate limit exceeded")
+	ErrLimited = errors.New("rate limit exceeded")
 )
