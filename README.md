@@ -20,27 +20,112 @@ go get -u github.com/go-water/water
 + rate limit（限流）
 + circuit breaker（熔断）
 
-用例
-```go
+### 这个样例，复制代码，就可以直接跑
+```
 package main
 
 import (
+	"context"
+	"fmt"
 	"github.com/go-water/water"
+	"github.com/sony/gobreaker"
+	"net/http"
+	"time"
 )
 
 func main() {
-	r := water.New()
+	InitService()
+	router := water.New()
+	router.GET("/", H.Index)
+	_ = router.Run(":80")
+}
 
-	r.GET("/", func(c *water.Context) {
-		c.Text(200, "Hello, World!")
-	})
+// 控制层，这里定义了一个 Handlers 来管理所有业务接口
 
-	r.Run(":8080")
+var (
+	H *Handlers
+)
+
+type Handlers struct {
+	index water.Handler
+}
+
+func NewService() *Handlers {
+	var options []water.ServerOption
+	// 一分钟内，连续10次后，将限流
+	options = append(options, water.ServerErrorLimiter(time.Minute, 10))
+	// 熔断定义，服务层异常将触发，见服务层代码以及注释
+	options = append(options, water.ServerBreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{})))
+	return &Handlers{
+		index: water.NewHandler(
+			&IndexService{ServerBase: &water.ServerBase{}}, options...,
+		)}
+}
+
+func InitService() {
+	H = NewService()
+}
+
+func (h *Handlers) Index(ctx *water.Context) {
+	request, err := water.BindJSON[IndexRequest](ctx)
+	if err != nil {
+		_ = ctx.JSON(http.StatusBadRequest, water.H{"err": err.Error()})
+		return
+	}
+
+	request.Name = "Jimmy"
+	resp, err := h.index.ServerWater(ctx, request)
+	if err != nil {
+		_ = ctx.JSON(http.StatusBadRequest, water.H{"err": err.Error()})
+		return
+	}
+
+	_ = ctx.JSON(http.StatusOK, resp)
+}
+
+// 业务服务层，业务接口服务结构体包含一个water.ServerBase，同时必须实现 Handle 方法
+
+type IndexService struct {
+	*water.ServerBase
+}
+
+type IndexRequest struct {
+	Name string
+}
+
+type IndexResponse struct {
+	Message string
+}
+
+func (s *IndexService) Handle(ctx context.Context, req *IndexRequest) (interface{}, error) {
+	resp := new(IndexResponse)
+	resp.Message = fmt.Sprintf("Hello, %s!", req.Name)
+	return resp, nil
+	// 如果要测试服务熔断，可以打开下面代码，让代码返回异常，测试连续6次错误，第7次将不再进入这个方法
+	// return nil, errors.New("service failure")
 }
 ```
 在浏览器输入
 ```
-http://localhost:8080/
+http://localhost/
+```
+运行结果
+```
+{
+    "Message": "Hello, Jimmy!"
+}
+一分钟内连续10次后，限流
+{
+  "err": "rate limit exceeded"
+}
+熔断前，连续错误6次
+{
+  "err": "service failure"
+}
+熔断后
+{
+  "err": "circuit breaker is open"
+}
 ```
 
 ### 样例仓库
