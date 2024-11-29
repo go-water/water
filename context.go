@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/go-water/water/binding"
 	"github.com/go-water/water/render"
 	"io"
@@ -151,7 +152,15 @@ func (c *Context) ShouldBindQuery(obj any) error {
 }
 
 func (c *Context) ShouldBindWith(obj any, b binding.Binding) error {
-	return b.Bind(c.Request, obj)
+	err := b.Bind(c.Request, obj)
+	switch err.(type) {
+	case nil:
+		return nil
+	case validator.ValidationErrors:
+		return err
+	default:
+		return Err(err.Error())
+	}
 }
 
 func (c *Context) BindJSON(obj any) error {

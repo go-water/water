@@ -2,7 +2,7 @@ package ratelimit
 
 import (
 	"context"
-	"github.com/go-water/water/consterr"
+	"errors"
 	"github.com/go-water/water/endpoint"
 )
 
@@ -14,7 +14,7 @@ func NewErrorLimiter(limit Allower) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request any) (any, error) {
 			if !limit.Allow() {
-				return nil, consterr.ErrLimited
+				return nil, errors.New("rate limit exceeded")
 			}
 
 			return next(ctx, request)
