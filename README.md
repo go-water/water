@@ -131,8 +131,9 @@ http://localhost/
 ### 样例仓库
 + [https://github.com/go-water/go-water](https://github.com/go-water/go-water)
 
-### 官方文档
-+ [https://go-water.cn](https://go-water.cn)
+### 使用的网站列表
++ [https://iissy.com](https://iissy.com)
++ [https://jitask.com](https://jitask.com)
 
 ### 参考仓库
 + [kit](https://github.com/go-kit/kit)
