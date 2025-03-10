@@ -49,6 +49,17 @@ func (c *Context) reset() {
 	c.formCache = nil
 }
 
+func (c *Context) FullPath() (value string) {
+	value = c.Request.URL.RawQuery
+	if len(value) > 0 {
+		value = c.Request.URL.Path + "?" + value
+	} else {
+		value = c.Request.URL.Path
+	}
+
+	return
+}
+
 func (c *Context) Param(key string) string {
 	return c.Request.PathValue(key)
 }
