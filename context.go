@@ -327,6 +327,13 @@ func (c *Context) Redirect(code int, location string) {
 	})
 }
 
+func (c *Context) Data(code int, contentType string, data []byte) {
+	c.Render(code, render.Data{
+		ContentType: contentType,
+		Data:        data,
+	})
+}
+
 func (c *Context) SetSameSite(sameSite http.SameSite) {
 	c.sameSite = sameSite
 }
