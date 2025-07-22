@@ -132,7 +132,6 @@ http://localhost/
 + [https://github.com/go-water/go-water](https://github.com/go-water/go-water)
 
 ### 使用的网站列表
-+ [https://iissy.com](https://iissy.com)
 + [https://jitask.com](https://jitask.com)
 
 ### 参考仓库
