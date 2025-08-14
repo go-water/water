@@ -1,12 +1,13 @@
 package water
 
 import (
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/golang-jwt/jwt/v4/request"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5/request"
 )
 
 func SetAuthToken(uniqueUser, issuer, privateKeyPath string, expire time.Duration) (tokenString string, err error) {
@@ -83,5 +84,5 @@ func parseToken(token *jwt.Token) (uniqueUser, issuer, signature string, err err
 		return "", "", "", jwt.ErrTokenInvalidClaims
 	}
 
-	return claims.ID, claims.Issuer, token.Signature, nil
+	return claims.ID, claims.Issuer, string(token.Signature), nil
 }
