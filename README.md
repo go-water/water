@@ -27,46 +27,32 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-water/water"
-	"github.com/sony/gobreaker"
 	"net/http"
 	"time"
+
+	"github.com/go-water/water"
+	"github.com/sony/gobreaker"
 )
 
 func main() {
-	InitService()
 	router := water.New()
-	router.GET("/", H.Index)
+	router.GET("/", Index)
 	_ = router.Run(":80")
 }
 
 // 控制层，这里定义了一个 Handlers 来管理所有业务接口
-
 var (
-	H *Handlers
+	options = []water.ServerOption{
+		// 一分钟内，连续10次后，将限流
+		water.ServerErrorLimiter(time.Minute, 10),
+		// 熔断定义，服务层异常将触发熔断
+		water.ServerBreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{})),
+	}
+
+	index = water.NewHandler(&IndexService{ServerBase: &water.ServerBase{}}, options...)
 )
 
-type Handlers struct {
-	index water.Handler
-}
-
-func NewService() *Handlers {
-	var options []water.ServerOption
-	// 一分钟内，连续10次后，将限流
-	options = append(options, water.ServerErrorLimiter(time.Minute, 10))
-	// 熔断定义，服务层异常将触发，见服务层代码以及注释
-	options = append(options, water.ServerBreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{})))
-	return &Handlers{
-		index: water.NewHandler(
-			&IndexService{ServerBase: &water.ServerBase{}}, options...,
-		)}
-}
-
-func InitService() {
-	H = NewService()
-}
-
-func (h *Handlers) Index(ctx *water.Context) {
+func Index(ctx *water.Context) {
 	request, err := water.BindJSON[IndexRequest](ctx)
 	if err != nil {
 		_ = ctx.JSON(http.StatusBadRequest, water.H{"err": err.Error()})
@@ -74,7 +60,7 @@ func (h *Handlers) Index(ctx *water.Context) {
 	}
 
 	request.Name = "Jimmy"
-	resp, err := h.index.ServerWater(ctx, request)
+	resp, err := index.ServerWater(ctx, request)
 	if err != nil {
 		_ = ctx.JSON(http.StatusBadRequest, water.H{"err": err.Error()})
 		return
@@ -83,8 +69,7 @@ func (h *Handlers) Index(ctx *water.Context) {
 	_ = ctx.JSON(http.StatusOK, resp)
 }
 
-// 业务服务层，业务接口服务结构体包含一个water.ServerBase，同时必须实现 Handle 方法
-
+// 业务接口服务定义，结构体包含一个water.ServerBase，同时必须实现 Handle 方法
 type IndexService struct {
 	*water.ServerBase
 }
@@ -97,7 +82,7 @@ type IndexResponse struct {
 	Message string
 }
 
-func (s *IndexService) Handle(ctx context.Context, req *IndexRequest) (interface{}, error) {
+func (s *IndexService) Handle(ctx context.Context, req *IndexRequest) (*IndexResponse, error) {
 	resp := new(IndexResponse)
 	resp.Message = fmt.Sprintf("Hello, %s!", req.Name)
 	return resp, nil
