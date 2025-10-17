@@ -2,7 +2,6 @@ package water
 
 import (
 	"fmt"
-	"github.com/go-water/water/render"
 	"net"
 	"net/http"
 	"path"
@@ -10,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/go-water/water/render"
 )
 
 const defaultMultipartMemory = 32 << 20 // 32 MB
@@ -105,7 +106,7 @@ func (w *Water) print(addr string) {
 	fmt.Println("|  _  |  __/ | | (_) |    \\ V  V / (_) | |  | | (_| |_|")
 	fmt.Println("|_| |_|\\___|_|_|\\___( )    \\_/\\_/ \\___/|_|  |_|\\__,_(_)")
 	fmt.Println("                    |/")
-	fmt.Println(fmt.Sprintf("Listening and serving HTTP on %s", addr))
+	fmt.Printf("Listening and serving HTTP on %s", addr)
 }
 
 type Router struct {
