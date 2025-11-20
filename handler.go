@@ -3,15 +3,16 @@ package water
 import (
 	"context"
 	"errors"
+	"log/slog"
+	"net/http"
+	"reflect"
+
 	"github.com/go-water/water/circuitbreaker"
 	"github.com/go-water/water/endpoint"
 	"github.com/go-water/water/logger"
 	"github.com/go-water/water/ratelimit"
 	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
-	"log/slog"
-	"net/http"
-	"reflect"
 )
 
 type HandlerFunc func(*Context)
@@ -34,7 +35,8 @@ func (r *RouterHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 type handler struct {
 	e         endpoint.Endpoint
-	finalizer []ServerFinalizerFunc
+	filter    FilterFunc
+	finalizer []FinalizerFunc
 	l         *slog.Logger
 	dl        *rate.Limiter
 	el        *rate.Limiter
@@ -120,6 +122,13 @@ func (h *handler) ServerWater(ctx context.Context, req any) (resp any, err error
 				fn(ctx, err)
 			}
 		}()
+	}
+
+	if h.filter != nil {
+		err = h.filter(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	resp, err = h.e(ctx, req)

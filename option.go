@@ -2,16 +2,23 @@ package water
 
 import (
 	"context"
+	"time"
+
 	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
-	"time"
 )
 
 type ServerOption func(h *handler)
 
-type ServerFinalizerFunc func(ctx context.Context, err error)
+type FilterFunc func(ctx context.Context) error
 
-func ServerFinalizer(f ...ServerFinalizerFunc) ServerOption {
+func ServerFilterFunc(fn FilterFunc) ServerOption {
+	return func(h *handler) { h.filter = fn }
+}
+
+type FinalizerFunc func(ctx context.Context, err error)
+
+func ServerFinalizer(f ...FinalizerFunc) ServerOption {
 	return func(h *handler) { h.finalizer = append(h.finalizer, f...) }
 }
 
