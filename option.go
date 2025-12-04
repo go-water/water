@@ -10,10 +10,12 @@ import (
 
 type ServerOption func(h *handler)
 
-type FilterFunc func(ctx context.Context) error
+type Filter func(ctx context.Context) error
+
+type FilterFunc func() Filter
 
 func ServerFilterFunc(fn FilterFunc) ServerOption {
-	return func(h *handler) { h.filter = fn }
+	return func(h *handler) { h.filter = fn() }
 }
 
 type FinalizerFunc func(ctx context.Context, err error)

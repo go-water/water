@@ -35,7 +35,7 @@ func (r *RouterHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 type handler struct {
 	e         endpoint.Endpoint
-	filter    FilterFunc
+	filter    Filter
 	finalizer []FinalizerFunc
 	l         *slog.Logger
 	dl        *rate.Limiter
