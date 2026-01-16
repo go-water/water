@@ -1,12 +1,10 @@
 package water
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/go-water/water/binding"
-	"github.com/go-water/water/render"
 	"io"
 	"mime/multipart"
 	"net"
@@ -18,6 +16,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/go-water/water/binding"
+	"github.com/go-water/water/render"
 )
 
 const (
@@ -162,6 +164,11 @@ func (c *Context) ShouldBindQuery(obj any) error {
 	return c.ShouldBindWith(obj, binding.Query)
 }
 
+func (c *Context) ShouldBindUri(obj any, fields ...string) error {
+	c.WithValue(binding.UriPathKeys, fields)
+	return c.ShouldBindWith(obj, binding.Uri)
+}
+
 func (c *Context) ShouldBindWith(obj any, b binding.Binding) error {
 	err := b.Bind(c.Request, obj)
 	switch err.(type) {
@@ -184,6 +191,14 @@ func (c *Context) BindQuery(obj any) error {
 
 func (c *Context) BindHeader(obj any) error {
 	return c.MustBindWith(obj, binding.Header)
+}
+
+func (c *Context) BindUri(obj any) error {
+	if err := c.ShouldBindUri(obj); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Context) MustBindWith(obj any, b binding.Binding) error {
@@ -219,6 +234,13 @@ func (c *Context) Set(key string, value any) {
 	}
 
 	c.Keys[key] = value
+}
+
+func (c *Context) WithValue(key string, value any) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	ctx := context.WithValue(c.Request.Context(), key, value)
+	c.Request = c.Request.WithContext(ctx)
 }
 
 func (c *Context) Get(key string) (value any, exists bool) {
@@ -496,7 +518,7 @@ func (c *Context) Render(code int, r render.Render) {
 	}
 }
 
-func BindJSON[T any](c *Context) (t *T, err error) {
+func BindJSON[T any](c *Context, fields ...string) (t *T, err error) {
 	defer func() {
 		if p := recover(); p != nil {
 			switch pe := p.(type) {
@@ -514,6 +536,12 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 		obj = reflect.MakeMap(reflect.TypeOf(t).Elem()).Interface()
 	} else {
 		obj = new(T)
+	}
+
+	if len(fields) > 0 {
+		if err = c.ShouldBindUri(obj, fields...); err != nil {
+			return nil, err
+		}
 	}
 
 	if err = c.ShouldBind(obj); err != nil {

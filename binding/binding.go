@@ -25,6 +25,7 @@ var (
 	Query         = queryBinding{}
 	FormMultipart = formMultipartBinding{}
 	Header        = headerBinding{}
+	Uri           = uriBinding{}
 )
 
 func Default(method, contentType string) Binding {
