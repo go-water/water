@@ -82,14 +82,14 @@ func (h *handler) endpoint(service Service) endpoint.Endpoint {
 		returnValue := returnValues[1].Interface()
 		if returnValue == nil {
 			return returnValues[0].Interface(), nil
-		} else {
-			er, ok := returnValue.(error)
-			if ok {
-				return nil, er
-			}
-
-			return nil, errors.New("method Handle return argument not include error type")
 		}
+
+		err, ok := returnValue.(error)
+		if ok {
+			return nil, err
+		}
+
+		return nil, errors.New("method Handle return argument not include error type")
 	}
 }
 

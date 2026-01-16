@@ -1,8 +1,9 @@
 package water
 
 import (
-	"github.com/go-water/water/logger"
 	"log/slog"
+
+	"github.com/go-water/water/logger"
 )
 
 var (
