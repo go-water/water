@@ -165,7 +165,7 @@ func (c *Context) ShouldBindQuery(obj any) error {
 }
 
 func (c *Context) ShouldBindUri(obj any, fields ...string) error {
-	c.WithValue(binding.UriPathKeys, fields)
+	c.WithValue(binding.Uri, fields)
 	return c.ShouldBindWith(obj, binding.Uri)
 }
 
@@ -236,7 +236,7 @@ func (c *Context) Set(key string, value any) {
 	c.Keys[key] = value
 }
 
-func (c *Context) WithValue(key string, value any) {
+func (c *Context) WithValue(key, value any) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	ctx := context.WithValue(c.Request.Context(), key, value)

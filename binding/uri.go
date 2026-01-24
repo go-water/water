@@ -4,10 +4,6 @@ import (
 	"net/http"
 )
 
-const (
-	UriPathKeys = "uri-path-keys"
-)
-
 type uriBinding struct{}
 
 func (uriBinding) Name() string {
@@ -15,7 +11,7 @@ func (uriBinding) Name() string {
 }
 
 func (uriBinding) Bind(req *http.Request, obj any) error {
-	fields, ok := req.Context().Value(UriPathKeys).([]string)
+	fields, ok := req.Context().Value(uriBinding{}).([]string)
 	if !ok {
 		return nil
 	}
