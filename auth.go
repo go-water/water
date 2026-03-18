@@ -1,7 +1,6 @@
 package water
 
 import (
-	"encoding/base64"
 	"net/http"
 	"os"
 	"strings"
@@ -85,5 +84,5 @@ func parseToken(token *jwt.Token) (uniqueUser, issuer, signature string, err err
 		return "", "", "", jwt.ErrTokenInvalidClaims
 	}
 
-	return claims.ID, claims.Issuer, base64.StdEncoding.EncodeToString(token.Signature), nil
+	return claims.ID, claims.Issuer, token.EncodeSegment(token.Signature), nil
 }
