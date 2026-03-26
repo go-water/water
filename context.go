@@ -164,8 +164,7 @@ func (c *Context) ShouldBindQuery(obj any) error {
 	return c.ShouldBindWith(obj, binding.Query)
 }
 
-func (c *Context) ShouldBindUri(obj any, fields ...string) error {
-	c.WithValue(binding.Uri, fields)
+func (c *Context) ShouldBindUri(obj any) error {
 	return c.ShouldBindWith(obj, binding.Uri)
 }
 
@@ -518,7 +517,7 @@ func (c *Context) Render(code int, r render.Render) {
 	}
 }
 
-func BindJSON[T any](c *Context, fields ...string) (t *T, err error) {
+func BindJSON[T any](c *Context) (t *T, err error) {
 	defer func() {
 		if p := recover(); p != nil {
 			switch pe := p.(type) {
@@ -538,10 +537,8 @@ func BindJSON[T any](c *Context, fields ...string) (t *T, err error) {
 		obj = new(T)
 	}
 
-	if len(fields) > 0 {
-		if err = c.ShouldBindUri(obj, fields...); err != nil {
-			return nil, err
-		}
+	if err = c.ShouldBindUri(obj); err != nil {
+		return nil, err
 	}
 
 	if err = c.ShouldBind(obj); err != nil {
