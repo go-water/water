@@ -24,7 +24,7 @@ func (uriBinding) Bind(req *http.Request, obj any) error {
 		return err
 	}
 
-	return validate(obj)
+	return nil
 }
 
 func cleanPatternAndParams(pattern, urlPath string) (cleaned string, params map[string]string) {
