@@ -168,6 +168,10 @@ func (c *Context) ShouldBindUri(obj any) error {
 	return c.ShouldBindWith(obj, binding.Uri)
 }
 
+func (c *Context) ShouldBindSet(obj any) error {
+	return c.ShouldBindWith(obj, binding.Set)
+}
+
 func (c *Context) ShouldBindWith(obj any, b binding.Binding) error {
 	err := b.Bind(c.Request, obj)
 	switch err.(type) {
@@ -233,11 +237,16 @@ func (c *Context) Set(key string, value any) {
 	}
 
 	c.Keys[key] = value
+	c.withValue(binding.SetBindingKey{}, c.Keys)
 }
 
 func (c *Context) WithValue(key, value any) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	c.withValue(key, value)
+}
+
+func (c *Context) withValue(key, value any) {
 	ctx := context.WithValue(c.Request.Context(), key, value)
 	c.Request = c.Request.WithContext(ctx)
 }
@@ -535,6 +544,10 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 		obj = reflect.MakeMap(reflect.TypeOf(t).Elem()).Interface()
 	} else {
 		obj = new(T)
+	}
+
+	if err = c.ShouldBindSet(obj); err != nil {
+		return nil, err
 	}
 
 	if err = c.ShouldBindUri(obj); err != nil {

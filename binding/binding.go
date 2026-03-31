@@ -26,6 +26,7 @@ var (
 	FormMultipart = formMultipartBinding{}
 	Header        = headerBinding{}
 	Uri           = uriBinding{}
+	Set           = setBinding{}
 )
 
 func Default(method, contentType string) Binding {
