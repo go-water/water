@@ -526,7 +526,7 @@ func (c *Context) Render(code int, r render.Render) {
 	}
 }
 
-func BindJSON[T any](c *Context) (t *T, err error) {
+func Bind[T any](c *Context) (t *T, err error) {
 	defer func() {
 		if p := recover(); p != nil {
 			switch pe := p.(type) {
@@ -539,9 +539,10 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 	}()
 
 	var obj any
-	kind := reflect.TypeOf(t).Elem().Kind()
+	elemType := reflect.TypeOf(t).Elem()
+	kind := elemType.Kind()
 	if kind == reflect.Map {
-		obj = reflect.MakeMap(reflect.TypeOf(t).Elem()).Interface()
+		obj = reflect.MakeMap(elemType).Interface()
 	} else {
 		obj = new(T)
 	}
@@ -564,12 +565,10 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 
 	if kind == reflect.Map {
 		o := obj.(T)
-		t = &o
-	} else {
-		return obj.(*T), nil
+		return &o, nil
 	}
 
-	return t, nil
+	return obj.(*T), nil
 }
 
 func (c *Context) hasRequestContext() bool {

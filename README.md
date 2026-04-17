@@ -53,7 +53,7 @@ var (
 )
 
 func Index(ctx *water.Context) {
-	request, err := water.BindJSON[IndexRequest](ctx)
+	request, err := water.Bind[IndexRequest](ctx)
 	if err != nil {
 		_ = ctx.JSON(http.StatusBadRequest, water.H{"err": err.Error()})
 		return
