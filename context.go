@@ -554,6 +554,10 @@ func BindJSON[T any](c *Context) (t *T, err error) {
 		return nil, err
 	}
 
+	if err = c.ShouldBindQuery(obj); err != nil {
+		return nil, err
+	}
+
 	if err = c.ShouldBind(obj); err != nil {
 		return nil, err
 	}
