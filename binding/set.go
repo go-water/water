@@ -14,19 +14,19 @@ func (setBinding) Name() string {
 
 func (setBinding) Bind(req *http.Request, obj any) error {
 	m := make(map[string][]string)
-	keys := make(map[string]any)
+	bvMap := make(map[string]any)
 	ctx := req.Context()
-	kv := ctx.Value(SetBindingKey{})
-	switch pe := kv.(type) {
+	o := ctx.Value(SetBindingKey{})
+	switch ot := o.(type) {
 	case map[string]any:
-		keys = pe
+		bvMap = ot
 	default:
-		keys = nil
+		bvMap = nil
 	}
 
-	for k, v := range keys {
-		vv, _ := v.(string)
-		m[k] = []string{vv}
+	for k, v := range bvMap {
+		val, _ := v.(string)
+		m[k] = []string{val}
 	}
 
 	if err := mapSet(obj, m); err != nil {
