@@ -539,7 +539,7 @@ func Bind[T any](c *Context) (t *T, err error) {
 	}()
 
 	var obj any
-	elemType := reflect.TypeOf((*T)(nil)).Elem()
+	elemType := reflect.TypeOf(t).Elem()
 	if elemType.Kind() == reflect.Map {
 		ptr := reflect.New(elemType)
 		ptr.Elem().Set(reflect.MakeMap(elemType))
