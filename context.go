@@ -539,10 +539,11 @@ func Bind[T any](c *Context) (t *T, err error) {
 	}()
 
 	var obj any
-	elemType := reflect.TypeOf(t).Elem()
-	kind := elemType.Kind()
-	if kind == reflect.Map {
-		obj = reflect.MakeMap(elemType).Interface()
+	elemType := reflect.TypeOf((*T)(nil)).Elem()
+	if elemType.Kind() == reflect.Map {
+		ptr := reflect.New(elemType)
+		ptr.Elem().Set(reflect.MakeMap(elemType))
+		obj = ptr.Interface()
 	} else {
 		obj = new(T)
 	}
@@ -561,11 +562,6 @@ func Bind[T any](c *Context) (t *T, err error) {
 
 	if err = c.ShouldBind(obj); err != nil {
 		return nil, err
-	}
-
-	if kind == reflect.Map {
-		o := obj.(T)
-		return &o, nil
 	}
 
 	return obj.(*T), nil
