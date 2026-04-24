@@ -100,12 +100,11 @@ func (w *Water) validateHeader(header string) (clientIP string, valid bool) {
 }
 
 func (w *Water) print(addr string) {
-	fmt.Println(" _   _      _ _         __        __         _     _ _ ")
-	fmt.Println("| | | | ___| | | ___    \\ \\      / /__  _ __| | __| | |")
-	fmt.Println("| |_| |/ _ \\ | |/ _ \\    \\ \\ /\\ / / _ \\| '__| |/ _` | |")
-	fmt.Println("|  _  |  __/ | | (_) |    \\ V  V / (_) | |  | | (_| |_|")
-	fmt.Println("|_| |_|\\___|_|_|\\___( )    \\_/\\_/ \\___/|_|  |_|\\__,_(_)")
-	fmt.Println("                    |/")
+	fmt.Println(" _       __        __               ")
+	fmt.Println("| |     / / ____ _  / /_  ___    _____")
+	fmt.Println("| | /| / / / __ `/ / __/ / _ \\  / ___/")
+	fmt.Println("| |/ |/ / / /_/ / / /_  /  __/ / /    ")
+	fmt.Println("|__/|__/ \\__,_/  \\__/  \\___/ /_/     ")
 	fmt.Printf("Listening and serving HTTP on %s", addr)
 }
 
