@@ -12,7 +12,7 @@ func (setBinding) Name() string {
 	return "set"
 }
 
-func (setBinding) Bind(req *http.Request, obj any) error {
+func (b setBinding) Bind(req *http.Request, obj any) error {
 	m := make(map[string][]string)
 	bvMap := make(map[string]any)
 	ctx := req.Context()
@@ -29,9 +29,13 @@ func (setBinding) Bind(req *http.Request, obj any) error {
 		m[k] = []string{val}
 	}
 
-	if err := mapSet(obj, m); err != nil {
+	if err := b.mapTag(obj, m); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (b setBinding) mapTag(ptr any, m map[string][]string) error {
+	return mapFormByTag(ptr, m, b.Name())
 }
