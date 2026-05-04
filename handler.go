@@ -40,6 +40,7 @@ type handler struct {
 	l         *slog.Logger
 	dl        *rate.Limiter
 	el        *rate.Limiter
+	eus       *ratelimit.UserBasedLimiter
 	breaker   *gobreaker.CircuitBreaker
 }
 
@@ -58,6 +59,17 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 	}
 	if h.breaker != nil {
 		h.e = circuitbreaker.GoBreaker(h.breaker)(h.e)
+	}
+	if h.eus != nil {
+		getUser := func(ctx context.Context) string {
+			// 从Context中提取water.Context
+			val := ctx.Value("_go-water/context-key")
+			if waterCtx, ok := val.(*Context); ok {
+				return waterCtx.GetString("uuid")
+			}
+			return ""
+		}
+		h.e = h.eus.UserErrorLimiter(getUser)(h.e)
 	}
 
 	l := logger.NewLogger(logger.Level, logger.AddSource).With(slog.String("name", srv.Name(srv)))

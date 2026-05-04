@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/go-water/water/ratelimit"
 	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
 )
@@ -27,6 +28,12 @@ func ServerFinalizer(f ...FinalizerFunc) ServerOption {
 func ServerErrorLimiter(interval time.Duration, b int) ServerOption {
 	return func(h *handler) {
 		h.el = rate.NewLimiter(rate.Every(interval), b)
+	}
+}
+
+func ServerUserErrorLimiter(interval time.Duration, b int) ServerOption {
+	return func(h *handler) {
+		h.eus = ratelimit.NewUserBasedLimiter(interval, b)
 	}
 }
 
