@@ -11,20 +11,24 @@ func (uriBinding) Name() string {
 	return "uri"
 }
 
-func (uriBinding) Bind(req *http.Request, obj any) error {
+func (b uriBinding) Bind(req *http.Request, obj any) error {
 	m := make(map[string][]string)
 	pat := req.Pattern
-	url := req.RequestURI
+	url := req.URL.Path
 	_, pvMap := cleanPatternAndParams(pat, url)
 	for k, v := range pvMap {
 		m[k] = []string{v}
 	}
 
-	if err := mapURI(obj, m); err != nil {
+	if err := b.mapTag(obj, m); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (b uriBinding) mapTag(ptr any, m map[string][]string) error {
+	return mapFormByTag(ptr, m, b.Name())
 }
 
 func cleanPatternAndParams(pattern, urlPath string) (cleaned string, params map[string]string) {
