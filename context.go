@@ -172,6 +172,10 @@ func (c *Context) ShouldBindSet(obj any) error {
 	return c.ShouldBindWith(obj, binding.Set)
 }
 
+func (c *Context) ShouldBindHeader(obj any) error {
+	return c.ShouldBindWith(obj, binding.Header)
+}
+
 func (c *Context) ShouldBindWith(obj any, b binding.Binding) error {
 	err := b.Bind(c.Request, obj)
 	switch err.(type) {
@@ -557,6 +561,10 @@ func Bind[T any](c *Context) (t *T, err error) {
 	}
 
 	if err = c.ShouldBindQuery(obj); err != nil {
+		return nil, err
+	}
+
+	if err = c.ShouldBindHeader(obj); err != nil {
 		return nil, err
 	}
 

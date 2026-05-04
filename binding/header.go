@@ -18,7 +18,7 @@ func (headerBinding) Bind(req *http.Request, obj any) error {
 		return err
 	}
 
-	return validate(obj)
+	return nil
 }
 
 func mapHeader(ptr any, h map[string][]string) error {
