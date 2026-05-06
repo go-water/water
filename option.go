@@ -27,19 +27,37 @@ func ServerFinalizer(f ...FinalizerFunc) ServerOption {
 
 func ServerErrorLimiter(interval time.Duration, b int) ServerOption {
 	return func(h *handler) {
-		h.el = rate.NewLimiter(rate.Every(interval), b)
-	}
-}
-
-func ServerUserErrorLimiter(interval time.Duration, b int) ServerOption {
-	return func(h *handler) {
-		h.eus = ratelimit.NewUserBasedLimiter(interval, b)
+		h.el = ratelimit.NewErrorLimiter(rate.NewLimiter(rate.Every(interval), b))
 	}
 }
 
 func ServerDelayLimiter(interval time.Duration, b int) ServerOption {
 	return func(h *handler) {
-		h.dl = rate.NewLimiter(rate.Every(interval), b)
+		h.dl = ratelimit.NewDelayingLimiter(rate.NewLimiter(rate.Every(interval), b))
+	}
+}
+
+func ServerUserErrorLimiter(interval time.Duration, b int, fn func(ctx context.Context) string) ServerOption {
+	return func(h *handler) {
+		h.eul = ratelimit.NewUserBasedLimiter(interval, b).UserErrorLimiter(fn)
+	}
+}
+
+func ServerUserDelayLimiter(interval time.Duration, b int, fn func(ctx context.Context) string) ServerOption {
+	return func(h *handler) {
+		h.dul = ratelimit.NewUserBasedLimiter(interval, b).UserDelayingLimiter(fn)
+	}
+}
+
+func ServerIPErrorLimiter(interval time.Duration, b int, fn func(ctx context.Context) string) ServerOption {
+	return func(h *handler) {
+		h.eil = ratelimit.NewIPBasedLimiter(interval, b).IPErrorLimiter(fn)
+	}
+}
+
+func ServerIPDelayLimiter(interval time.Duration, b int, fn func(ctx context.Context) string) ServerOption {
+	return func(h *handler) {
+		h.dil = ratelimit.NewIPBasedLimiter(interval, b).IPDelayingLimiter(fn)
 	}
 }
 

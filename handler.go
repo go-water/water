@@ -10,9 +10,7 @@ import (
 	"github.com/go-water/water/circuitbreaker"
 	"github.com/go-water/water/endpoint"
 	"github.com/go-water/water/logger"
-	"github.com/go-water/water/ratelimit"
 	"github.com/sony/gobreaker"
-	"golang.org/x/time/rate"
 )
 
 type HandlerFunc func(*Context)
@@ -38,10 +36,19 @@ type handler struct {
 	filter    Filter
 	finalizer []FinalizerFunc
 	l         *slog.Logger
-	dl        *rate.Limiter
-	el        *rate.Limiter
-	eus       *ratelimit.UserBasedLimiter
-	breaker   *gobreaker.CircuitBreaker
+
+	// 全局限流
+	dl endpoint.Middleware
+	el endpoint.Middleware
+	// IP限流
+	dil endpoint.Middleware
+	eil endpoint.Middleware
+	// 用户限流
+	dul endpoint.Middleware
+	eul endpoint.Middleware
+
+	// 熔断
+	breaker *gobreaker.CircuitBreaker
 }
 
 func NewHandler(srv Service, options ...ServerOption) Handler {
@@ -52,24 +59,28 @@ func NewHandler(srv Service, options ...ServerOption) Handler {
 
 	h.e = h.endpoint(srv)
 	if h.dl != nil {
-		h.e = ratelimit.NewDelayingLimiter(h.dl)(h.e)
+		h.e = h.dl(h.e)
 	}
 	if h.el != nil {
-		h.e = ratelimit.NewErrorLimiter(h.el)(h.e)
+		h.e = h.el(h.e)
 	}
+
+	if h.dil != nil {
+		h.e = h.dil(h.e)
+	}
+	if h.eil != nil {
+		h.e = h.eil(h.e)
+	}
+
+	if h.dul != nil {
+		h.e = h.dul(h.e)
+	}
+	if h.eul != nil {
+		h.e = h.eul(h.e)
+	}
+
 	if h.breaker != nil {
 		h.e = circuitbreaker.GoBreaker(h.breaker)(h.e)
-	}
-	if h.eus != nil {
-		getUser := func(ctx context.Context) string {
-			// 从Context中提取water.Context
-			val := ctx.Value("_go-water/context-key")
-			if waterCtx, ok := val.(*Context); ok {
-				return waterCtx.GetString("uuid")
-			}
-			return ""
-		}
-		h.e = h.eus.UserErrorLimiter(getUser)(h.e)
 	}
 
 	l := logger.NewLogger(logger.Level, logger.AddSource).With(slog.String("name", srv.Name(srv)))

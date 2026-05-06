@@ -24,6 +24,7 @@ import (
 
 const (
 	ContextKey = "_go-water/context-key"
+	UserKey    = "uuid"
 )
 
 var MaxMultipartMemory int64 = 32 << 20 // 32 MB
@@ -244,6 +245,10 @@ func (c *Context) Set(key string, value any) {
 	c.withValue(binding.SetBindingKey{}, c.Keys)
 }
 
+func (c *Context) SetUser(value any) {
+	c.Set(UserKey, value)
+}
+
 func (c *Context) WithValue(key, value any) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -260,6 +265,10 @@ func (c *Context) Get(key string) (value any, exists bool) {
 	defer c.mu.RUnlock()
 	value, exists = c.Keys[key]
 	return
+}
+
+func (c *Context) GetUser() (s string) {
+	return c.GetString(UserKey)
 }
 
 func (c *Context) GetString(key string) (s string) {
