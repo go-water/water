@@ -105,7 +105,7 @@ func (w *Water) print(addr string) {
 	fmt.Println("| | /| / / / __ `/ / __/ / _ \\  / ___/")
 	fmt.Println("| |/ |/ / / /_/ / / /_  /  __/ / /    ")
 	fmt.Println("|__/|__/ \\__,_/  \\__/  \\___/ /_/     ")
-	fmt.Printf("Listening and serving HTTP on %s", addr)
+	fmt.Printf("Listening and serving HTTP on %s\n", addr)
 }
 
 type Router struct {
