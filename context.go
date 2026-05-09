@@ -43,6 +43,8 @@ type Context struct {
 
 	queryCache url.Values
 	formCache  url.Values
+
+	hijacked bool
 }
 
 func (c *Context) reset() {
@@ -216,9 +218,16 @@ func (c *Context) MustBindWith(obj any, b binding.Binding) error {
 	return nil
 }
 
-func (c *Context) JSON(status int, data any) error {
-	c.Writer.Header().Set("Content-Type", "application/json")
+func (c *Context) Hijack() {
+	c.hijacked = true
+}
 
+func (c *Context) JSON(status int, data any) error {
+	if c.hijacked {
+		return nil
+	}
+
+	c.Writer.Header().Set("Content-Type", "application/json")
 	if data == nil {
 		c.Writer.WriteHeader(status)
 		return nil
