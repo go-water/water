@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-const defaultMemory = 32 << 20
+const defaultMemory = 100 << 20
 
 type formBinding struct{}
 type formMultipartBinding struct{}
