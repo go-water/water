@@ -27,7 +27,7 @@ const (
 	UserKey    = "uuid"
 )
 
-var MaxMultipartMemory int64 = 32 << 20 // 32 MB
+var MaxMultipartMemory int64 = 100 << 20 // 100 MB
 
 type H map[string]any
 
