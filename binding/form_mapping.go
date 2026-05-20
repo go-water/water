@@ -377,6 +377,10 @@ func setFormMap(ptr any, form map[string][]string) error {
 		return ErrConvertToMapString
 	}
 	for k, v := range form {
+		if len(v) == 0 {
+			ptrMap[k] = ""
+			continue
+		}
 		ptrMap[k] = v[len(v)-1] // pick last
 	}
 
