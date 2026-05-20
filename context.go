@@ -52,6 +52,7 @@ func (c *Context) reset() {
 	c.Keys = nil
 	c.queryCache = nil
 	c.formCache = nil
+	c.hijacked = false
 }
 
 func (c *Context) FullPath() (value string) {
